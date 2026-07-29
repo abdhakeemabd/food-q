@@ -54,7 +54,7 @@ const Layout = () => {
     window.addEventListener('resize', handleResize);
     
     // Fetch inventory from backend
-    useDbStore.getState().fetchInventory();
+    useDbStore.getState().fetchAllData();
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);

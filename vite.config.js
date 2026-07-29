@@ -62,7 +62,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://food-q-backend.onrender.com',
         changeOrigin: true,
       }
     }
