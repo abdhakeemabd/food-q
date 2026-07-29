@@ -43,18 +43,41 @@ export const useDbStore = create((set, get) => ({
         fetch(`${API_URL}/api/bills/`, opts).catch(() => ({ json: () => [] }))
       ]);
 
-      const inventory = await invRes.json();
-      const tables = await tablesRes.json();
+      const inventoryRaw = await invRes.json();
+      const inventory = Array.isArray(inventoryRaw) ? inventoryRaw.map(i => ({
+        ...i,
+        itemName: i.name || i.itemName || '',
+        quantity: i.stock !== undefined ? i.stock : (i.quantity || 0),
+        status: i.is_available !== false ? 'Active' : 'Archived',
+        img: i.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80',
+      })) : [];
+
+      const tablesRaw = await tablesRes.json();
+      const tables = Array.isArray(tablesRaw) ? tablesRaw.map(t => ({
+        ...t,
+        name: t.name || `Table ${t.number}`,
+        tableNumber: String(t.number || t.tableNumber || ''),
+        status: t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Available'
+      })) : [];
+
       const customers = await customersRes.json();
       const categories = await categoriesRes.json();
-      const bills = await billsRes.json();
+
+      const billsRaw = await billsRes.json();
+      const bills = Array.isArray(billsRaw) ? billsRaw.map(b => ({
+        ...b,
+        total: b.amount_paid || b.total || 0,
+        status: b.status || 'Paid',
+        date: b.created_at || b.date,
+        orderType: b.orderType || 'Dine In'
+      })) : [];
 
       set({ 
-        inventory: Array.isArray(inventory) ? inventory : [], 
-        tables: Array.isArray(tables) ? tables : [], 
+        inventory, 
+        tables, 
         customers: Array.isArray(customers) ? customers : [],
         categories: Array.isArray(categories) ? categories : [],
-        bills: Array.isArray(bills) ? bills : []
+        bills
       });
     } catch (err) {
       console.error("Failed to fetch data from API", err);
@@ -67,11 +90,16 @@ export const useDbStore = create((set, get) => ({
     const backendModels = ['inventory', 'tables', 'customers', 'categories'];
     
     if (backendModels.includes(collection)) {
+      let payload = { ...data };
+      if (collection === 'inventory') {
+        payload.name = data.itemName;
+        payload.stock = data.quantity;
+      }
       try {
         const res = await fetch(`${API_URL}/api/${collection}/`, {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify(data)
+          body: JSON.stringify(payload)
         });
         if (res.ok) {
           savedRecord = await res.json();
@@ -105,11 +133,16 @@ export const useDbStore = create((set, get) => ({
     const backendModels = ['inventory', 'tables', 'customers', 'categories'];
     
     if (backendModels.includes(collection)) {
+      let payload = { ...data };
+      if (collection === 'inventory') {
+        if (data.itemName !== undefined) payload.name = data.itemName;
+        if (data.quantity !== undefined) payload.stock = data.quantity;
+      }
       try {
         await fetch(`${API_URL}/api/${collection}/${id}/`, {
           method: 'PATCH',
           headers: getAuthHeaders(),
-          body: JSON.stringify(data)
+          body: JSON.stringify(payload)
         });
       } catch (e) { console.error('API Error:', e); }
     }
@@ -277,11 +310,17 @@ export const useDbStore = create((set, get) => ({
       status: 'Available',
     };
     
+    let payload = {
+      number: tableData.tableNumber || Math.floor(Math.random() * 100) + 1,
+      capacity: tableData.capacity || 4,
+      status: 'available'
+    };
+
     try {
       const res = await fetch(`${API_URL}/api/tables/`, {
          method: 'POST',
          headers: getAuthHeaders(),
-         body: JSON.stringify(tableData)
+         body: JSON.stringify(payload)
       });
       if (res.ok) {
          newTable = await res.json();
