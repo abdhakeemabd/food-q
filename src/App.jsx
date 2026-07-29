@@ -24,10 +24,11 @@ const Login = () => {
   const [password, setPassword] = React.useState('');
   const [error, setError] = React.useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!login(username, password)) {
-      setError('Invalid credentials. Try admin/admin or staff/staff');
+    const success = await login(username, password);
+    if (!success) {
+      setError('Invalid credentials. Please try again.');
     }
   };
 

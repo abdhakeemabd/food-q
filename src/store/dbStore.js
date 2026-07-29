@@ -1,10 +1,18 @@
 import { create } from 'zustand';
 
-// Helper to generate IDs for local-only state items (like activeOrders)
+// Helper to generate IDs for local-only state items
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
 // Point API to the deployed backend
 const API_URL = 'https://food-q-backend.onrender.com';
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('access_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
 
 export const useDbStore = create((set, get) => ({
   // Backend Supported Collections
@@ -14,7 +22,7 @@ export const useDbStore = create((set, get) => ({
   tables: [],
   categories: [],
   
-  // Local-only Collections (lost on refresh until backend models are added)
+  // Local-only Collections
   purchases: [],
   expenses: [],
   income: [],
@@ -26,12 +34,13 @@ export const useDbStore = create((set, get) => ({
   // Fetch all core data from Node/Django backend
   fetchAllData: async () => {
     try {
+      const opts = { headers: getAuthHeaders() };
       const [invRes, tablesRes, customersRes, categoriesRes, billsRes] = await Promise.all([
-        fetch(`${API_URL}/api/inventory/`).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/tables/`).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/customers/`).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/categories/`).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/bills/`).catch(() => ({ json: () => [] }))
+        fetch(`${API_URL}/api/inventory/`, opts).catch(() => ({ json: () => [] })),
+        fetch(`${API_URL}/api/tables/`, opts).catch(() => ({ json: () => [] })),
+        fetch(`${API_URL}/api/customers/`, opts).catch(() => ({ json: () => [] })),
+        fetch(`${API_URL}/api/categories/`, opts).catch(() => ({ json: () => [] })),
+        fetch(`${API_URL}/api/bills/`, opts).catch(() => ({ json: () => [] }))
       ]);
 
       const inventory = await invRes.json();
@@ -61,7 +70,7 @@ export const useDbStore = create((set, get) => ({
       try {
         const res = await fetch(`${API_URL}/api/${collection}/`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(data)
         });
         if (res.ok) {
@@ -99,7 +108,7 @@ export const useDbStore = create((set, get) => ({
       try {
         await fetch(`${API_URL}/api/${collection}/${id}/`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify(data)
         });
       } catch (e) { console.error('API Error:', e); }
@@ -129,6 +138,7 @@ export const useDbStore = create((set, get) => ({
       try {
         await fetch(`${API_URL}/api/${collection}/${id}/`, {
           method: 'DELETE',
+          headers: getAuthHeaders()
         });
       } catch (e) { console.error('API Error:', e); }
     }
@@ -179,7 +189,7 @@ export const useDbStore = create((set, get) => ({
     try {
       const res = await fetch(`${API_URL}/api/bills/`, {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
+         headers: getAuthHeaders(),
          body: JSON.stringify(billData)
       });
       if (res.ok) {
@@ -204,7 +214,7 @@ export const useDbStore = create((set, get) => ({
           
           fetch(`${API_URL}/api/tables/${billData.tableId}/`, {
              method: 'PATCH',
-             headers: {'Content-Type': 'application/json'},
+             headers: getAuthHeaders(),
              body: JSON.stringify({status: 'available'})
           }).catch(console.error);
       }
@@ -232,7 +242,7 @@ export const useDbStore = create((set, get) => ({
     
     fetch(`${API_URL}/api/tables/${tableId}/`, {
         method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
+        headers: getAuthHeaders(),
         body: JSON.stringify({status: 'occupied'})
     }).catch(console.error);
 
@@ -249,7 +259,7 @@ export const useDbStore = create((set, get) => ({
     
     fetch(`${API_URL}/api/tables/${tableId}/`, {
         method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
+        headers: getAuthHeaders(),
         body: JSON.stringify({status: 'available'})
     }).catch(console.error);
 
@@ -270,7 +280,7 @@ export const useDbStore = create((set, get) => ({
     try {
       const res = await fetch(`${API_URL}/api/tables/`, {
          method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
+         headers: getAuthHeaders(),
          body: JSON.stringify(tableData)
       });
       if (res.ok) {
@@ -297,7 +307,7 @@ export const useDbStore = create((set, get) => ({
     try {
       await fetch(`${API_URL}/api/tables/${tableId}/`, {
          method: 'PATCH',
-         headers: { 'Content-Type': 'application/json' },
+         headers: getAuthHeaders(),
          body: JSON.stringify({status: status.toLowerCase()})
       });
     } catch(e) { console.error(e) }
@@ -326,7 +336,7 @@ export const useDbStore = create((set, get) => ({
       );
       fetch(`${API_URL}/api/inventory/${existingInv.id}/`, {
           method: 'PATCH',
-          headers: {'Content-Type': 'application/json'},
+          headers: getAuthHeaders(),
           body: JSON.stringify({stock: (existingInv.stock || existingInv.quantity || 0) + Number(data.quantity)})
       }).catch(console.error);
     } else {
