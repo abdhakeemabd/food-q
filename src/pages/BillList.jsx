@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import * as XLSX from 'xlsx';
-import { Download, Eye, X, Trash2 } from 'lucide-react';
+import { Download, Eye, X, Trash2, Receipt } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAuth } from '../store/AuthContext';
 
