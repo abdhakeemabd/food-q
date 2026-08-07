@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const Inventory = () => {
