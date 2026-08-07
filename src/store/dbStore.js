@@ -12,6 +12,17 @@ const getAuthHeaders = () => {
   };
 };
 
+const fetchWithAuth = async (url, options = {}) => {
+  const headers = getAuthHeaders();
+  let res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+  if (res.status === 401) {
+    localStorage.removeItem('access_token');
+    const retryHeaders = { 'Content-Type': 'application/json' };
+    res = await fetch(url, { ...options, headers: { ...retryHeaders, ...(options.headers || {}) } });
+  }
+  return res;
+};
+
 export const useDbStore = create((set, get) => ({
   // Backend Supported Collections
   customers: [],
@@ -34,15 +45,14 @@ export const useDbStore = create((set, get) => ({
   // Fetch all core data from Node/Django backend
   fetchAllData: async () => {
     try {
-      const opts = { headers: getAuthHeaders() };
       const [invRes, tablesRes, customersRes, categoriesRes, billsRes, expRes, trackRes] = await Promise.all([
-        fetch(`${API_URL}/api/inventory/`, opts).catch(() => ({ ok: false, json: () => [] })),
-        fetch(`${API_URL}/api/tables/`, opts).catch(() => ({ ok: false, json: () => [] })),
-        fetch(`${API_URL}/api/customers/`, opts).catch(() => ({ ok: false, json: () => [] })),
-        fetch(`${API_URL}/api/categories/`, opts).catch(() => ({ ok: false, json: () => [] })),
-        fetch(`${API_URL}/api/bills/`, opts).catch(() => ({ ok: false, json: () => [] })),
-        fetch(`${API_URL}/api/daily-expenses/`, opts).catch(() => ({ ok: false, json: () => [] })),
-        fetch(`${API_URL}/api/daily-trackers/`, opts).catch(() => ({ ok: false, json: () => [] }))
+        fetchWithAuth(`${API_URL}/api/inventory/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/tables/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/customers/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/categories/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/bills/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/daily-expenses/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/daily-trackers/`).catch(() => ({ ok: false, json: () => [] }))
       ]);
 
       const inventoryRaw = invRes.ok ? await invRes.json() : [];
@@ -106,7 +116,7 @@ export const useDbStore = create((set, get) => ({
         payload.stock = data.quantity;
       }
       try {
-        const res = await fetch(`${API_URL}/api/${collection}/`, {
+        const res = await fetchWithAuth(`${API_URL}/api/${collection}/`, {
           method: 'POST',
           headers: getAuthHeaders(),
           body: JSON.stringify(payload)
@@ -151,7 +161,7 @@ export const useDbStore = create((set, get) => ({
         if (data.quantity !== undefined) payload.stock = data.quantity;
       }
       try {
-        await fetch(`${API_URL}/api/${collection}/${id}/`, {
+        await fetchWithAuth(`${API_URL}/api/${collection}/${id}/`, {
           method: 'PATCH',
           headers: getAuthHeaders(),
           body: JSON.stringify(payload)
@@ -183,7 +193,7 @@ export const useDbStore = create((set, get) => ({
     
     if (backendModels.includes(collection)) {
       try {
-        await fetch(`${API_URL}/api/${collection}/${id}/`, {
+        await fetchWithAuth(`${API_URL}/api/${collection}/${id}/`, {
           method: 'DELETE',
           headers: getAuthHeaders()
         });
@@ -236,7 +246,7 @@ export const useDbStore = create((set, get) => ({
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/bills/`, {
+      const res = await fetchWithAuth(`${API_URL}/api/bills/`, {
          method: 'POST',
          headers: getAuthHeaders(),
          body: JSON.stringify(billData)
@@ -261,7 +271,7 @@ export const useDbStore = create((set, get) => ({
           updatedTables = state.tables.map(t => t.id === billData.tableId ? { ...t, status: 'Available' } : t);
           delete updatedOrders[billData.tableId];
           
-          fetch(`${API_URL}/api/tables/${billData.tableId}/`, {
+          fetchWithAuth(`${API_URL}/api/tables/${billData.tableId}/`, {
              method: 'PATCH',
              headers: getAuthHeaders(),
              body: JSON.stringify({status: 'available'})
@@ -289,7 +299,7 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
     
-    fetch(`${API_URL}/api/tables/${tableId}/`, {
+    fetchWithAuth(`${API_URL}/api/tables/${tableId}/`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({status: 'occupied'})
@@ -306,7 +316,7 @@ export const useDbStore = create((set, get) => ({
     const newOrders = { ...state.activeOrders };
     delete newOrders[tableId];
     
-    fetch(`${API_URL}/api/tables/${tableId}/`, {
+    fetchWithAuth(`${API_URL}/api/tables/${tableId}/`, {
         method: 'PATCH',
         headers: getAuthHeaders(),
         body: JSON.stringify({status: 'available'})
@@ -333,7 +343,7 @@ export const useDbStore = create((set, get) => ({
     };
 
     try {
-      const res = await fetch(`${API_URL}/api/tables/`, {
+      const res = await fetchWithAuth(`${API_URL}/api/tables/`, {
          method: 'POST',
          headers: getAuthHeaders(),
          body: JSON.stringify(payload)
@@ -360,7 +370,7 @@ export const useDbStore = create((set, get) => ({
 
   updateTableStatus: async (tableId, status) => {
     try {
-      await fetch(`${API_URL}/api/tables/${tableId}/`, {
+      await fetchWithAuth(`${API_URL}/api/tables/${tableId}/`, {
          method: 'PATCH',
          headers: getAuthHeaders(),
          body: JSON.stringify({status: status.toLowerCase()})
@@ -389,7 +399,7 @@ export const useDbStore = create((set, get) => ({
       newInventory = newInventory.map(i => 
         i.id === existingInv.id ? { ...i, stock: (i.stock || i.quantity || 0) + Number(data.quantity) } : i
       );
-      fetch(`${API_URL}/api/inventory/${existingInv.id}/`, {
+      fetchWithAuth(`${API_URL}/api/inventory/${existingInv.id}/`, {
           method: 'PATCH',
           headers: getAuthHeaders(),
           body: JSON.stringify({stock: (existingInv.stock || existingInv.quantity || 0) + Number(data.quantity)})
