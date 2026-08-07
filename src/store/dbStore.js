@@ -1,10 +1,8 @@
 import { create } from 'zustand';
+import { API_URL } from '../config';
 
 // Helper to generate IDs for local-only state items
 const generateId = () => Math.random().toString(36).substr(2, 9);
-
-// Point API to the deployed backend
-const API_URL = 'https://food-q-backend.onrender.com';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('access_token');
@@ -21,6 +19,8 @@ export const useDbStore = create((set, get) => ({
   inventory: [],
   tables: [],
   categories: [],
+  dailyExpenses: [],
+  dailyTrackers: [],
   
   // Local-only Collections
   purchases: [],
@@ -35,15 +35,17 @@ export const useDbStore = create((set, get) => ({
   fetchAllData: async () => {
     try {
       const opts = { headers: getAuthHeaders() };
-      const [invRes, tablesRes, customersRes, categoriesRes, billsRes] = await Promise.all([
-        fetch(`${API_URL}/api/inventory/`, opts).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/tables/`, opts).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/customers/`, opts).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/categories/`, opts).catch(() => ({ json: () => [] })),
-        fetch(`${API_URL}/api/bills/`, opts).catch(() => ({ json: () => [] }))
+      const [invRes, tablesRes, customersRes, categoriesRes, billsRes, expRes, trackRes] = await Promise.all([
+        fetch(`${API_URL}/api/inventory/`, opts).catch(() => ({ ok: false, json: () => [] })),
+        fetch(`${API_URL}/api/tables/`, opts).catch(() => ({ ok: false, json: () => [] })),
+        fetch(`${API_URL}/api/customers/`, opts).catch(() => ({ ok: false, json: () => [] })),
+        fetch(`${API_URL}/api/categories/`, opts).catch(() => ({ ok: false, json: () => [] })),
+        fetch(`${API_URL}/api/bills/`, opts).catch(() => ({ ok: false, json: () => [] })),
+        fetch(`${API_URL}/api/daily-expenses/`, opts).catch(() => ({ ok: false, json: () => [] })),
+        fetch(`${API_URL}/api/daily-trackers/`, opts).catch(() => ({ ok: false, json: () => [] }))
       ]);
 
-      const inventoryRaw = await invRes.json();
+      const inventoryRaw = invRes.ok ? await invRes.json() : [];
       const inventory = Array.isArray(inventoryRaw) ? inventoryRaw.map(i => ({
         ...i,
         itemName: i.name || i.itemName || '',
@@ -52,7 +54,7 @@ export const useDbStore = create((set, get) => ({
         img: i.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80',
       })) : [];
 
-      const tablesRaw = await tablesRes.json();
+      const tablesRaw = tablesRes.ok ? await tablesRes.json() : [];
       const tables = Array.isArray(tablesRaw) ? tablesRaw.map(t => ({
         ...t,
         name: t.name || `Table ${t.number}`,
@@ -60,10 +62,10 @@ export const useDbStore = create((set, get) => ({
         status: t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Available'
       })) : [];
 
-      const customers = await customersRes.json();
-      const categories = await categoriesRes.json();
+      const customers = customersRes.ok ? await customersRes.json() : [];
+      const categories = categoriesRes.ok ? await categoriesRes.json() : [];
 
-      const billsRaw = await billsRes.json();
+      const billsRaw = billsRes.ok ? await billsRes.json() : [];
       const bills = Array.isArray(billsRaw) ? billsRaw.map(b => ({
         ...b,
         total: b.amount_paid || b.total || 0,
@@ -72,12 +74,20 @@ export const useDbStore = create((set, get) => ({
         orderType: b.orderType || 'Dine In'
       })) : [];
 
+      const dailyExpensesRaw = expRes.ok ? await expRes.json() : [];
+      const dailyExpenses = Array.isArray(dailyExpensesRaw) ? dailyExpensesRaw : [];
+      
+      const dailyTrackersRaw = trackRes.ok ? await trackRes.json() : [];
+      const dailyTrackers = Array.isArray(dailyTrackersRaw) ? dailyTrackersRaw : [];
+
       set({ 
         inventory, 
         tables, 
         customers: Array.isArray(customers) ? customers : [],
         categories: Array.isArray(categories) ? categories : [],
-        bills
+        bills,
+        dailyExpenses,
+        dailyTrackers
       });
     } catch (err) {
       console.error("Failed to fetch data from API", err);
@@ -87,7 +97,7 @@ export const useDbStore = create((set, get) => ({
   // Add a record
   addRecord: async (collection, data, user) => {
     let savedRecord = { ...data, id: generateId() }; 
-    const backendModels = ['inventory', 'tables', 'customers', 'categories'];
+    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers'];
     
     if (backendModels.includes(collection)) {
       let payload = { ...data };
@@ -122,15 +132,17 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
 
+    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : collection);
+
     set((state) => ({
-      [collection]: [...state[collection], savedRecord],
+      [stateKey]: [...state[stateKey], savedRecord],
       auditLogs: [...state.auditLogs, log]
     }));
   },
 
   // Update a record
   updateRecord: async (collection, id, data, user) => {
-    const backendModels = ['inventory', 'tables', 'customers', 'categories'];
+    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers'];
     
     if (backendModels.includes(collection)) {
       let payload = { ...data };
@@ -155,8 +167,10 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
 
+    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : collection);
+
     set((state) => ({
-      [collection]: state[collection].map(record => 
+      [stateKey]: state[stateKey].map(record => 
         record.id === id ? { ...record, ...data, lastUpdatedBy: user?.name, lastUpdatedDate: new Date().toISOString() } : record
       ),
       auditLogs: [...state.auditLogs, log]
@@ -165,7 +179,7 @@ export const useDbStore = create((set, get) => ({
 
   // Soft Delete a record (Move to Archive)
   deleteRecord: async (collection, id, user) => {
-    const backendModels = ['inventory', 'tables', 'customers', 'categories'];
+    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers'];
     
     if (backendModels.includes(collection)) {
       try {
@@ -184,8 +198,10 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
 
+    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : collection);
+
     set((state) => ({
-      [collection]: state[collection].filter(record => record.id !== id),
+      [stateKey]: state[stateKey].filter(record => record.id !== id),
       auditLogs: [...state.auditLogs, log]
     }));
   },

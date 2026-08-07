@@ -89,29 +89,35 @@ const Inventory = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div className="d-flex justify-between align-center mb-32 flex-wrap gap-16">
         <div>
-          <h2 style={{ margin: '0 0 4px 0' }}>Inventory Management</h2>
-          <div style={{ color: 'var(--text-muted)' }}>Manage menu items, prices, and stock levels</div>
+          <h2 className="page-title d-flex align-center gap-8">
+            <Package size={24} color="var(--primary-color)" /> Inventory
+          </h2>
+          <div className="text-muted">Manage menu items, prices, and stock levels</div>
         </div>
-        <button onClick={openAddModal} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
           <Plus size={18} /> Add Menu Item
         </button>
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <input 
-            type="text" 
-            placeholder="Search inventory..." 
-            className="form-input" 
-            style={{ width: '300px', padding: '10px 16px', borderRadius: '20px' }}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <div className="glass-panel overflow-hidden">
+        <div className="px-24 py-16 border-bottom d-flex justify-between align-center">
+          <h3 className="m-0">Menu Items</h3>
+          <div className="pos-rel">
+            <input 
+              type="text" 
+              placeholder="Search inventory..." 
+              className="form-input" 
+              style={{ width: '300px', padding: '10px 16px 10px 40px', borderRadius: '20px' }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Search size={18} className="pos-abs text-muted" style={{ left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          </div>
         </div>
 
-        <div style={{ overflowX: 'auto', width: '100%' }}>
+        <div className="w-100" style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
@@ -127,8 +133,8 @@ const Inventory = () => {
           <tbody>
             {filteredInventory.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
-                  No items found. Add some to get started.
+                <td colSpan="7" className="text-center p-32 text-muted">
+                  No items found matching your search. Add some to get started.
                 </td>
               </tr>
             ) : (
@@ -136,30 +142,30 @@ const Inventory = () => {
                 <tr key={item.id}>
                   <td>
                     {item.img ? (
-                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundImage: `url(${item.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                      <div className="radius-sm" style={{ width: '40px', height: '40px', backgroundImage: `url(${item.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
                     ) : (
-                      <div style={{ width: '40px', height: '40px', borderRadius: '8px', backgroundColor: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                        <ImageIcon size={20} />
+                      <div className="radius-sm bg-tertiary d-flex align-center justify-center text-muted" style={{ width: '40px', height: '40px' }}>
+                        <UtensilsCrossed size={20} />
                       </div>
                     )}
                   </td>
-                  <td style={{ fontWeight: 600 }}>{item.itemName}</td>
+                  <td className="fw-600">{item.itemName}</td>
                   <td>{item.category}</td>
-                  <td style={{ color: 'var(--primary-color)', fontWeight: 600 }}>₹{item.price}</td>
+                  <td className="text-primary fw-600">₹{item.price}</td>
                   <td>
                     <span style={{ color: item.quantity <= 10 ? '#e23744' : 'inherit', fontWeight: item.quantity <= 10 ? 700 : 400 }}>
                       {item.quantity} units
                     </span>
                   </td>
                   <td>
-                    <span className={`badge badge-active`}>Active</span>
+                    <span className="badge badge-active">Active</span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => openEditModal(item)} className="btn btn-secondary" style={{ padding: '6px' }}>
+                    <div className="d-flex gap-8">
+                      <button onClick={() => openEditModal(item)} className="btn btn-secondary p-4">
                         <Edit2 size={16} />
                       </button>
-                      <button onClick={() => handleDelete(item.id)} className="btn btn-secondary" style={{ padding: '6px', color: '#e23744', borderColor: 'rgba(226, 55, 68, 0.2)' }}>
+                      <button onClick={() => handleDelete(item.id)} className="btn btn-secondary p-4 text-danger border-danger">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -172,47 +178,46 @@ const Inventory = () => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '500px', padding: '32px', border: '1px solid var(--border-light)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>{editItem ? 'Edit Item' : 'Add New Item'}</h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}>
+        <div className="pos-abs w-100 h-100 d-flex align-center justify-center z-2000 backdrop-blur" style={{ top: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.7)', position: 'fixed' }}>
+          <div className="glass-panel w-100 p-32 border-light shadow-xl" style={{ maxWidth: '500px' }}>
+            <div className="d-flex justify-between align-center mb-32">
+              <h3 className="m-0 fs-xl">{editItem ? 'Edit Item' : 'Add New Item'}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="bg-transparent border-none text-muted cursor-pointer d-flex">
                 <X size={24} />
               </button>
             </div>
             
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSave} className="d-flex flex-col gap-20">
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Item Name *</label>
-                <input type="text" className="form-input" value={formData.itemName} onChange={e => setFormData({...formData, itemName: e.target.value})} required placeholder="e.g. Chicken Shawaya" style={{ padding: '12px' }} />
+                <label className="d-block mb-8 fs-sm text-muted">Item Name *</label>
+                <input type="text" className="form-input p-12" value={formData.itemName} onChange={e => setFormData({...formData, itemName: e.target.value})} required placeholder="e.g. Chicken Shawaya" />
               </div>
               
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Category *</label>
-                <select className="form-input" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} style={{ padding: '12px' }}>
+                <label className="d-block mb-8 fs-sm text-muted">Category *</label>
+                <select className="form-input p-12" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
-              <div style={{ display: 'flex', gap: '20px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Price (₹) *</label>
-                  <input type="number" className="form-input" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required min="0" style={{ padding: '12px' }} />
+              <div className="d-flex gap-20">
+                <div className="flex-1">
+                  <label className="d-block mb-8 fs-sm text-muted">Price (₹) *</label>
+                  <input type="number" className="form-input p-12" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required min="0" />
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Stock Quantity *</label>
-                  <input type="number" className="form-input" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} required min="0" style={{ padding: '12px' }} />
+                <div className="flex-1">
+                  <label className="d-block mb-8 fs-sm text-muted">Stock Quantity *</label>
+                  <input type="number" className="form-input p-12" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} required min="0" />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Image (URL or Upload from PC)</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <input type="text" className="form-input" value={formData.img} onChange={e => setFormData({...formData, img: e.target.value})} placeholder="https://... or /images/..." style={{ padding: '12px', width: '100%' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>OR upload from PC:</span>
+                <label className="d-block mb-8 fs-sm text-muted">Image (URL or Upload from PC)</label>
+                <div className="d-flex flex-col gap-12">
+                  <input type="text" className="form-input p-12 w-100" value={formData.img} onChange={e => setFormData({...formData, img: e.target.value})} placeholder="https://... or /images/..." />
+                  <div className="d-flex align-center gap-12">
+                    <span className="fs-sm text-muted text-nowrap">OR upload from PC:</span>
                     <input 
                       type="file" 
                       accept="image/*"
@@ -224,33 +229,32 @@ const Inventory = () => {
                             const img = new Image();
                             img.onload = () => {
                               const canvas = document.createElement('canvas');
-                              const MAX_WIDTH = 300; // Resize to make it small enough for localStorage
-                              const scaleSize = Math.min(MAX_WIDTH / img.width, 1); // Only shrink, don't enlarge
+                              const MAX_WIDTH = 300;
+                              const scaleSize = Math.min(MAX_WIDTH / img.width, 1);
                               canvas.width = img.width * scaleSize;
                               canvas.height = img.height * scaleSize;
                               const ctx = canvas.getContext('2d');
                               ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                              // Compress as JPEG
                               const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
                               setFormData({ ...formData, img: compressedDataUrl });
                             };
-                            img.src = event.target.result;
+                            img.src = event.result;
                           };
                           reader.readAsDataURL(file);
                         }
                       }}
-                      style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}
+                      className="fs-sm"
                     />
                   </div>
                 </div>
                 {formData.img && formData.img.startsWith('data:image') && (
-                  <div style={{ marginTop: '8px', fontSize: '0.85rem', color: '#10b981' }}>✓ Image loaded from PC</div>
+                  <div className="fs-sm mt-8" style={{ color: '#10b981' }}>✓ Image loaded from PC</div>
                 )}
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary" style={{ padding: '12px 24px' }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px' }}>Save Item</button>
+              <div className="d-flex justify-end gap-16 mt-16">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary px-24 py-12">Cancel</button>
+                <button type="submit" className="btn btn-primary px-24 py-12">Save Item</button>
               </div>
             </form>
           </div>

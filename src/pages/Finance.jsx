@@ -21,6 +21,7 @@ const Finance = () => {
     title: '',
     amount: '',
     category: '',
+    
     date: new Date().toISOString().split('T')[0],
     notes: ''
   });
@@ -87,9 +88,9 @@ const Finance = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ margin: '0 0 8px 0' }}>Finance Management</h2>
+          <h2 className="page-title">Finance Management</h2>
           <div style={{ display: 'flex', gap: '8px' }}>
             <button 
               onClick={() => setActiveTab('expenses')}

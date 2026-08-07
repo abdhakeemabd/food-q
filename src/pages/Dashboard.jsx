@@ -16,21 +16,18 @@ const Dashboard = () => {
   const recentBills = [...bills].reverse().slice(0, 10);
 
   const StatCard = ({ title, value, icon: Icon, color }) => (
-    <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-      <div style={{ 
-        width: '60px', height: '60px', 
-        borderRadius: '50%', 
-        backgroundColor: `rgba(${color}, 0.1)`, 
-        color: `rgb(${color})`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center'
-      }}>
+    <div className="glass-panel p-24 d-flex align-center gap-20">
+      <div 
+        className="p-16 radius-md d-flex align-center justify-center"
+        style={{ backgroundColor: color + '20', color: color }}
+      >
         <Icon size={28} />
       </div>
       <div>
-        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className="text-muted fw-600 text-uppercase" style={{ fontSize: '0.9rem', letterSpacing: '0.05em' }}>
           {title}
         </div>
-        <div style={{ fontSize: '1.8rem', fontWeight: 700, marginTop: '4px' }}>
+        <div className="fw-700 mt-4" style={{ fontSize: '1.8rem' }}>
           {value}
         </div>
       </div>
@@ -39,23 +36,24 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: '32px' }}>
-        <h2 style={{ margin: '0 0 8px 0' }}>Dashboard Overview</h2>
-        <p style={{ color: 'var(--text-muted)', margin: 0 }}>Welcome back! Here is what's happening at Food-Q today.</p>
+      <div className="mb-32">
+        <h2 className="page-title">Dashboard Overview</h2>
+        <p className="text-muted m-0">Welcome back! Here is what's happening at Food-Q today.</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-        <StatCard title="Total Revenue" value={`₹${totalRevenue}`} icon={IndianRupee} color="226, 55, 68" />
-        <StatCard title="Total Orders" value={totalOrders} icon={ShoppingBag} color="245, 158, 11" />
-        <StatCard title="Active Menu Items" value={activeItems} icon={Utensils} color="42, 157, 143" />
-        <StatCard title="Registered Customers" value={totalCustomers} icon={TrendingUp} color="67, 97, 238" />
+      <div className="mb-32 grid-cols-auto-fit gap-24">
+        <StatCard title="Total Revenue" value={`₹${totalRevenue}`} icon={IndianRupee} color="#e23744" />
+        <StatCard title="Total Orders" value={totalOrders} icon={ShoppingBag} color="#f59e0b" />
+        <StatCard title="Active Menu Items" value={activeItems} icon={Utensils} color="#2a9d8f" />
+        <StatCard title="Registered Customers" value={totalCustomers} icon={TrendingUp} color="#4361ee" />
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0 }}>Recent Orders</h3>
+      {/* Recent Orders */}
+      <div className="glass-panel overflow-hidden">
+        <div className="p-24 border-bottom d-flex justify-between align-center">
+          <h3 className="m-0">Recent Orders</h3>
         </div>
-        <div style={{ overflowX: 'auto', width: '100%' }}>
+        <div className="w-100" style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ minWidth: '800px' }}>
             <thead>
               <tr>
@@ -70,20 +68,20 @@ const Dashboard = () => {
             <tbody>
               {recentBills.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
-                    No orders placed yet today.
+                  <td colSpan="6" className="text-center p-32 text-muted">
+                    No recent orders today.
                   </td>
                 </tr>
               ) : (
                 recentBills.map(bill => (
                   <tr key={bill.id}>
-                    <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>#{bill.id.toUpperCase()}</td>
-                    <td>{new Date(bill.createdDate).toLocaleString()}</td>
+                    <td className="fw-600" style={{ fontFamily: 'monospace' }}>#{bill.id.toUpperCase()}</td>
+                    <td>{new Date(bill.createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                     <td>
-                      <span style={{ fontWeight: 500 }}>{bill.orderType}</span>
+                      <span className="fw-500">{bill.orderType}</span>
                     </td>
                     <td>{bill.items.reduce((sum, i) => sum + i.qty, 0)} items</td>
-                    <td style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>₹{bill.totalAmount}</td>
+                    <td className="fw-700 text-primary">₹{bill.totalAmount}</td>
                     <td>
                       <span className={`badge badge-${bill.status.toLowerCase()}`}>{bill.status}</span>
                     </td>

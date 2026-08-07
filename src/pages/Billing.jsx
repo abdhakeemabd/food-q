@@ -126,8 +126,8 @@ const Billing = () => {
       {/* 1. Categories Sidebar */}
       {!isSelectingTable && (
         <div className="glass-panel billing-categories">
-          <h3 style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', margin: 0, fontSize: '1.1rem' }}>Categories</h3>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h3 className="p-16 border-bottom m-0 fs-lg">Categories</h3>
+          <div className="d-flex flex-col">
             {categories.map(cat => (
               <button
                 key={cat}
@@ -143,9 +143,9 @@ const Billing = () => {
 
       {/* 2. Product Grid (Middle) */}
       <div className="glass-panel billing-grid">
-        <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="p-16 border-bottom d-flex flex-col gap-16">
            {/* Petpooja style order type tabs */}
-           <div style={{ display: 'flex', gap: '8px' }}>
+           <div className="d-flex gap-8">
              {['Dine In', 'Parcel', 'Swiggy'].map(type => (
                <button 
                  key={type}
@@ -154,42 +154,41 @@ const Billing = () => {
                    setSearchQuery('');
                    if (type !== 'Dine In') setSelectedTable('');
                  }}
-                 className={`btn ${orderType === type ? 'btn-primary' : 'btn-secondary'}`}
-                 style={{ flex: 1, padding: '12px', borderRadius: 'var(--radius-md)', fontWeight: 600 }}
+                 className={`btn ${orderType === type ? 'btn-primary' : 'btn-secondary'} flex-1 p-12 radius-md fw-600`}
                >
                  {type}
                </button>
              ))}
            </div>
            
-           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center' }}>
-             <h3 style={{ margin: 0 }}>
+           <div className="d-flex flex-wrap gap-16 justify-between align-center">
+             <h3 className="m-0">
                {isSelectingTable ? 'Dine In Tables' : `Menu Items (${selectedCategory})`}
              </h3>
-             <div style={{ position: 'relative' }}>
+             <div className="pos-rel">
                <input 
                  type="text" 
                  placeholder={isSelectingTable ? "Search table (e.g. Table 1, Available)..." : "Search item..."} 
-                 className="form-input" 
-                 style={{ width: '280px', padding: '10px 16px 10px 40px', borderRadius: '20px' }} 
+                 className="form-input search-input" 
+                 style={{ width: '280px' }} 
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                />
-               <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+               <Search size={18} className="search-icon-pos text-muted" />
              </div>
            </div>
         </div>
         
-        <div style={{ padding: '16px', overflowY: 'auto', flex: 1 }}>
+        <div className="p-16 overflow-y-auto flex-1">
           {isSelectingTable ? (
-            <div style={{ padding: '24px' }}>
-              <h2 style={{ marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="p-24">
+              <h2 className="mb-24 d-flex align-center gap-8">
                 <UtensilsCrossed size={24} /> Select a Table
               </h2>
               {filteredTables.length === 0 ? (
-                <div style={{ color: 'var(--text-muted)', padding: '24px 0' }}>No tables match your search.</div>
+                <div className="text-muted py-24 text-center">No tables match your search.</div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
+                <div className="grid-cols-auto-fit gap-20">
                   {filteredTables.map(table => {
                     const isAvailable = table.status === 'Available';
                   const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
@@ -202,31 +201,23 @@ const Billing = () => {
                         setSelectedTable(table.id);
                         if(isAvailable) updateTableStatus(table.id, 'Occupied');
                       }}
+                      className="d-flex flex-col radius-md overflow-hidden pos-rel shadow-sm transition-all cursor-pointer"
                       style={{
                         backgroundColor: bgColor,
                         border: `2px solid ${isAvailable ? 'var(--border-color)' : statusColor}`,
-                        borderRadius: '12px',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        position: 'relative'
                       }}
                       onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.2)'; }}
                       onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; }}
                     >
                       {/* Top icon area */}
-                      <div style={{ 
-                        height: '110px', 
-                        backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'relative',
-                        color: statusColor
-                      }}>
+                      <div 
+                        className="d-flex align-center justify-center pos-rel"
+                        style={{ 
+                          height: '110px', 
+                          backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: statusColor
+                        }}
+                      >
                         {/* Table Vector Graphic */}
                         <svg viewBox="0 0 100 100" width="70" height="70">
                           {/* Chairs */}
@@ -238,67 +229,56 @@ const Billing = () => {
                           <rect x="24" y="24" width="52" height="52" rx="12" fill="currentColor" />
                         </svg>
 
-                        <div style={{ 
-                          position: 'absolute', 
-                          fontWeight: 800, 
-                          fontSize: '1.1rem', 
-                          color: 'white', 
-                          textShadow: '0 1px 3px rgba(0,0,0,0.6)',
-                          textAlign: 'center',
-                          width: '100%',
-                          padding: '0 8px'
-                        }}>
+                        <div 
+                          className="pos-abs w-100 text-center text-white fw-700 px-8"
+                          style={{ 
+                            fontSize: '1.1rem', 
+                            textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                          }}
+                        >
                           {table.name}
                         </div>
 
-                        <div style={{
-                          position: 'absolute',
-                          top: '10px',
-                          right: '10px',
-                          backgroundColor: statusColor,
-                          color: 'white',
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.5px'
-                        }}>
+                        <div 
+                          className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
+                          style={{
+                            top: '10px',
+                            right: '10px',
+                            backgroundColor: statusColor,
+                            fontSize: '0.75rem',
+                            letterSpacing: '0.5px'
+                          }}
+                        >
                           {table.status}
                         </div>
                       </div>
 
                       {/* Details area */}
-                      <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)' }}>
+                      <div className="p-16 flex-1 d-flex flex-col gap-12">
+                        <div className="d-flex justify-between align-center">
+                          <div className="d-flex align-center gap-6 text-muted">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                            <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{table.capacity} Pax</span>
+                            <span className="fs-sm fw-600">{table.capacity} Pax</span>
                           </div>
                           
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-muted)' }}>
+                          <div className="d-flex align-center gap-4 text-muted">
                             <UtensilsCrossed size={14} />
                             <span style={{ fontSize: '0.85rem' }}>Dine In</span>
                           </div>
                         </div>
 
                         {!isAvailable && (
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '12px', borderTop: '1px dashed var(--border-color)' }}>
-                            <div style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 600 }}>In Use</div>
+                          <div className="mt-auto pt-12 d-flex justify-between align-center" style={{ borderTop: '1px dashed var(--border-color)' }}>
+                            <div className="text-danger fw-600" style={{ fontSize: '0.8rem' }}>In Use</div>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 updateTableStatus(table.id, 'Available');
                               }}
+                              className="bg-transparent border-none text-main px-12 py-6 radius-sm cursor-pointer transition-all"
                               style={{ 
-                                background: 'transparent',
                                 border: '1px solid var(--border-color)',
-                                color: 'var(--text-main)',
-                                padding: '6px 12px',
-                                borderRadius: '6px',
-                                fontSize: '0.8rem',
-                                cursor: 'pointer',
-                                transition: '0.2s',
+                                fontSize: '0.8rem'
                               }}
                               onMouseOver={(e) => e.target.style.background = 'var(--bg-tertiary)'}
                               onMouseOut={(e) => e.target.style.background = 'transparent'}
@@ -315,55 +295,51 @@ const Billing = () => {
               )}
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+            <div className="grid-cols-auto-fit gap-16">
               {filteredInventory.map(item => {
                 const qty = getProductQty(item.id);
                 return (
                   <div 
                     key={item.id} 
+                    className="bg-tertiary radius-md overflow-hidden d-flex flex-col transition-all"
                     style={{ 
-                      backgroundColor: 'var(--bg-tertiary)', 
-                      borderRadius: 'var(--radius-md)',
-                      border: qty > 0 ? '2px solid var(--primary-color)' : '2px solid var(--border-color)',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'var(--transition-fast)'
+                      border: qty > 0 ? '2px solid var(--primary-color)' : '2px solid var(--border-color)'
                     }}
                   >
                     {/* Image Placeholder */}
-                    <div style={{ height: '110px', backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                    <div className="d-flex align-center justify-center pos-rel overflow-hidden" style={{ height: '110px', backgroundColor: 'rgba(255,255,255,0.05)' }}>
                       {item.img ? (
                         <img 
                           src={item.img} 
                           alt={item.itemName} 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          className="w-100 h-100"
+                          style={{ objectFit: 'cover' }}
                           onError={(e) => {
                             e.target.style.display = 'none';
                             e.target.parentNode.innerHTML = `<span style="font-size: 2rem;">🍲</span>`;
                           }}
                         />
                       ) : (
-                        <span style={{ fontSize: '2rem' }}>🍲</span>
+                        <span className="fs-2xl">🍲</span>
                       )}
                     </div>
                     
-                    <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div className="p-12 flex-1 d-flex flex-col justify-between">
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: '4px' }}>{item.itemName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '12px' }}>₹{item.price}</div>
+                        <div className="fw-600 mb-4" style={{ fontSize: '0.95rem' }}>{item.itemName}</div>
+                        <div className="text-muted mb-12 fs-sm">₹{item.price}</div>
                       </div>
                       
                       {/* +/- Controls */}
                       {qty === 0 ? (
-                        <button onClick={() => increaseQty(item)} className="btn btn-primary" style={{ width: '100%', padding: '6px' }}>
+                        <button onClick={() => increaseQty(item)} className="btn btn-primary w-100 p-6">
                           Add
                         </button>
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--bg-primary)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
-                          <button onClick={() => decreaseQty(item.id)} style={{ padding: '8px', background: 'var(--primary-color)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={16} /></button>
-                          <span style={{ fontWeight: 600, padding: '0 12px' }}>{qty}</span>
-                          <button onClick={() => increaseQty(item)} style={{ padding: '8px', background: 'var(--primary-color)', color: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={16} /></button>
+                        <div className="d-flex align-center justify-between bg-primary radius-sm overflow-hidden text-white">
+                          <button onClick={() => decreaseQty(item.id)} className="p-8 bg-transparent border-none text-white cursor-pointer d-flex align-center justify-center"><Minus size={16} /></button>
+                          <span className="fw-600 px-12">{qty}</span>
+                          <button onClick={() => increaseQty(item)} className="p-8 bg-transparent border-none text-white cursor-pointer d-flex align-center justify-center"><Plus size={16} /></button>
                         </div>
                       )}
                     </div>
@@ -379,36 +355,36 @@ const Billing = () => {
       <div className="glass-panel billing-cart">
         
         {/* Order Info */}
-        <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
+        <div className="p-16 border-bottom">
           {orderType === 'Dine In' && selectedTable && (
-            <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600 }}>{tables.find(t => t.id === selectedTable)?.name}</span>
-              <button onClick={() => setSelectedTable('')} className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }}>Change Table</button>
+            <div className="mb-12 p-12 bg-tertiary radius-sm d-flex justify-between align-center">
+              <span className="fw-600">{tables.find(t => t.id === selectedTable)?.name}</span>
+              <button onClick={() => setSelectedTable('')} className="btn btn-secondary p-4 fs-sm">Change Table</button>
             </div>
           )}
           {orderType !== 'Dine In' && (
-            <div style={{ marginBottom: '12px', padding: '12px', backgroundColor: 'var(--bg-tertiary)', borderRadius: 'var(--radius-sm)' }}>
-              <span style={{ fontWeight: 600 }}>{orderType} Order</span>
+            <div className="mb-12 p-12 bg-tertiary radius-sm">
+              <span className="fw-600">{orderType} Order</span>
             </div>
           )}
-          <input type="text" className="form-input" placeholder="Customer Phone (Optional)" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} style={{ padding: '8px', width: '100%' }} />
+          <input type="text" className="form-input p-8 w-100" placeholder="Customer Phone (Optional)" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
         </div>
 
         {/* Cart Items */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+        <div className="flex-1 overflow-y-auto p-16">
           {cart.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '40px' }}>Cart is empty</div>
+            <div className="text-muted text-center" style={{ marginTop: '40px' }}>Cart is empty</div>
           ) : (
             cart.map((item, index) => (
-              <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 500, fontSize: '0.9rem' }}>{item.itemName}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>₹{item.price} x {item.qty}</div>
+              <div key={index} className="d-flex justify-between align-center py-12 border-bottom">
+                <div className="flex-1">
+                  <div className="fw-500 fs-sm">{item.itemName}</div>
+                  <div className="fs-sm text-muted">₹{item.price} x {item.qty}</div>
                 </div>
-                <div style={{ fontWeight: 600, marginRight: '12px' }}>₹{item.price * item.qty}</div>
+                <div className="fw-600 mr-12">₹{item.price * item.qty}</div>
                 <button 
                   onClick={() => setCart(cart.filter(i => i.id !== item.id))} 
-                  style={{ background: 'transparent', border: 'none', color: '#e23744', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  className="bg-transparent border-none text-danger cursor-pointer p-4 d-flex align-center justify-center"
                   title="Remove Item"
                 >
                   <Trash2 size={16} />
@@ -420,27 +396,22 @@ const Billing = () => {
         </div>
 
         {/* Total & Checkout */}
-        <div style={{ padding: '16px', borderTop: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', fontSize: '1.4rem', fontWeight: 700 }}>
+        <div className="p-16 border-top" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+          <div className="d-flex justify-between mb-16 fs-xl fw-700">
             <span>Total:</span>
-            <span style={{ color: 'var(--primary-color)' }}>₹{cartTotal}</span>
+            <span className="text-primary">₹{cartTotal}</span>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+          <div className="grid-cols-2 gap-8 mb-16">
             {['Cash', 'UPI'].map(method => (
               <button 
                 key={method}
                 onClick={() => setPaymentMethod(method)}
+                className="py-12 radius-sm cursor-pointer fw-600 transition-all border-solid"
                 style={{ 
-                  padding: '12px 0',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1px solid',
                   backgroundColor: paymentMethod === method ? 'var(--primary-color)' : 'transparent',
                   borderColor: paymentMethod === method ? 'var(--primary-color)' : 'var(--border-color)',
-                  color: paymentMethod === method ? 'white' : 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  transition: 'var(--transition-fast)'
+                  color: paymentMethod === method ? 'white' : 'var(--text-muted)'
                 }}
               >
                 {method}
@@ -450,8 +421,8 @@ const Billing = () => {
 
           <button 
             onClick={handleGenerateBill} 
-            className="btn btn-primary" 
-            style={{ width: '100%', padding: '16px', fontSize: '1.1rem', borderRadius: 'var(--radius-md)', opacity: (cart.length === 0 || (orderType === 'Dine In' && !selectedTable)) ? 0.5 : 1 }}
+            className="btn btn-primary w-100 p-16 fs-lg radius-md" 
+            style={{ opacity: (cart.length === 0 || (orderType === 'Dine In' && !selectedTable)) ? 0.5 : 1 }}
             disabled={cart.length === 0 || (orderType === 'Dine In' && !selectedTable)}
           >
             Generate Bill

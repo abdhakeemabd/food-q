@@ -82,49 +82,46 @@ const Reports = () => {
   };
 
   const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
-    <div className="glass-panel" style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '20px' }}>
-      <div style={{ 
-        width: '60px', height: '60px', 
-        borderRadius: '50%', 
-        backgroundColor: `rgba(${color}, 0.1)`, 
-        color: `rgb(${color})`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center'
-      }}>
+    <div className="glass-panel p-24 d-flex align-center gap-20">
+      <div 
+        className="p-16 radius-md d-flex align-center justify-center"
+        style={{ backgroundColor: color + '20', color: color }}
+      >
         <Icon size={28} />
       </div>
       <div>
-        <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className="text-muted fs-sm fw-600 text-uppercase tracking-wide">
           {title}
         </div>
-        <div style={{ fontSize: '1.8rem', fontWeight: 700, marginTop: '4px' }}>
+        <div className="fs-2xl fw-700 mt-4">
           {value}
         </div>
-        {subtext && <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px' }}>{subtext}</div>}
+        {subtext && <div className="fs-sm text-muted mt-4">{subtext}</div>}
       </div>
     </div>
   );
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', flexWrap: 'wrap', gap: '16px' }}>
+      <div className="d-flex justify-between align-start mb-32 flex-wrap gap-16">
         <div>
-          <h2 style={{ margin: '0 0 8px 0' }}>Financial Reports</h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Analyze your sales, expenses, and overall profit.</p>
+          <h2 className="page-title">Financial Reports</h2>
+          <p className="text-muted m-0">Analyze your sales, expenses, and overall profit.</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div className="glass-panel" style={{ display: 'flex', padding: '4px', borderRadius: '8px' }}>
+        <div className="d-flex gap-16 align-center flex-wrap">
+          <div className="glass-panel d-flex p-4 radius-sm">
             <button 
-              className={`btn ${reportType === 'daily' ? 'btn-primary' : ''}`}
-              style={{ background: reportType === 'daily' ? 'var(--primary-color)' : 'transparent', color: reportType === 'daily' ? 'white' : 'var(--text-muted)', border: 'none', padding: '8px 16px' }}
               onClick={() => setReportType('daily')}
+              className="border-none py-8 px-16 radius-sm cursor-pointer fw-500"
+              style={{ background: reportType === 'daily' ? 'var(--primary-color)' : 'transparent', color: reportType === 'daily' ? 'white' : 'var(--text-muted)' }}
             >
               Daily
             </button>
             <button 
-              className={`btn ${reportType === 'monthly' ? 'btn-primary' : ''}`}
-              style={{ background: reportType === 'monthly' ? 'var(--primary-color)' : 'transparent', color: reportType === 'monthly' ? 'white' : 'var(--text-muted)', border: 'none', padding: '8px 16px' }}
               onClick={() => setReportType('monthly')}
+              className="border-none py-8 px-16 radius-sm cursor-pointer fw-500"
+              style={{ background: reportType === 'monthly' ? 'var(--primary-color)' : 'transparent', color: reportType === 'monthly' ? 'white' : 'var(--text-muted)' }}
             >
               Monthly
             </button>
@@ -146,25 +143,30 @@ const Reports = () => {
             />
           )}
 
-          <button onClick={handleExport} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button onClick={handleExport} className="btn btn-primary d-flex align-center gap-8">
             <Download size={18} /> Export Excel
           </button>
         </div>
       </div>
 
       {/* Metrics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '32px' }}>
-        <StatCard title="Total Revenue" value={`₹${totalRevenue}`} icon={IndianRupee} color="42, 157, 143" subtext="From generated bills" />
-        <StatCard title="Total Orders" value={totalOrders} icon={ShoppingBag} color="67, 97, 238" subtext="Successful transactions" />
-        <StatCard title="Total Expenses" value={`₹${totalExpenses}`} icon={ArrowDownRight} color="226, 55, 68" subtext="Staff, inventory, etc." />
-        <StatCard title="Net Profit" value={`₹${netProfit}`} icon={TrendingUp} color={netProfit >= 0 ? "42, 157, 143" : "226, 55, 68"} subtext="Revenue minus Expenses" />
+      <div className="grid-cols-auto-fit gap-24 mb-32">
+        <StatCard title={`Total Revenue (${reportType})`} value={`₹${totalRevenue}`} icon={TrendingUp} color="#2a9d8f" />
+        <StatCard title={`Total Expenses (${reportType})`} value={`₹${totalExpenses}`} icon={TrendingDown} color="#f59e0b" />
+        <StatCard 
+          title={`Net Profit (${reportType})`} 
+          value={`₹${netProfit}`} 
+          icon={IndianRupee} 
+          color={netProfit >= 0 ? "#2a9d8f" : "#e23744"} 
+          subtext={netProfit >= 0 ? "Profitable period" : "Loss-making period"}
+        />
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
-          <h3 style={{ margin: 0 }}>Recorded Expenses ({reportType})</h3>
+      <div className="glass-panel overflow-hidden">
+        <div className="p-24 border-bottom">
+          <h3 className="m-0">Recorded Expenses ({reportType})</h3>
         </div>
-        <div style={{ overflowX: 'auto', width: '100%' }}>
+        <div className="w-100" style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ minWidth: '800px' }}>
             <thead>
               <tr>
@@ -177,19 +179,19 @@ const Reports = () => {
             <tbody>
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                  <td colSpan="4" className="text-center p-32 text-muted">
                     No expenses recorded for this period.
                   </td>
                 </tr>
               ) : (
                 filteredExpenses.map(exp => (
                   <tr key={exp.id}>
-                    <td>{exp.date}</td>
+                    <td>{new Date(exp.date).toLocaleDateString()}</td>
                     <td>
-                      <span className="badge" style={{ backgroundColor: 'var(--bg-tertiary)' }}>{exp.category}</span>
+                      <span className="badge bg-tertiary">{exp.category}</span>
                     </td>
                     <td>{exp.title}</td>
-                    <td style={{ color: '#e23744', fontWeight: 600 }}>-₹{exp.amount}</td>
+                    <td className="fw-600" style={{ color: '#e23744' }}>-₹{exp.amount}</td>
                   </tr>
                 ))
               )}

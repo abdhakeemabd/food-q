@@ -22,32 +22,31 @@ const Tables = () => {
   );
 
   return (
-    <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', margin: '16px', borderRadius: '16px', overflow: 'hidden' }}>
+    <div className="glass-panel d-flex flex-col h-100 m-16 radius-lg overflow-hidden">
       {/* Header Area */}
-      <div style={{ padding: '24px', borderBottom: '1px solid var(--border-color)', display: 'flex', flexWrap: 'wrap', gap: '16px', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="p-24 border-bottom d-flex flex-wrap gap-16 justify-between align-center">
         <div>
-          <h2 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h2 className="page-title d-flex align-center gap-8">
             <LayoutGrid size={24} color="var(--primary-color)" /> Table Management
           </h2>
-          <p style={{ margin: 0, color: 'var(--text-muted)' }}>Manage your dining floor, check status, and take orders.</p>
+          <p className="m-0 text-muted">Manage your dining floor, check status, and take orders.</p>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ position: 'relative' }}>
+        <div className="d-flex align-center gap-16">
+          <div className="pos-rel">
             <input 
               type="text" 
               placeholder="Search table (e.g. Table 1, Available)..." 
-              className="form-input" 
-              style={{ width: '320px', padding: '10px 16px 10px 40px', borderRadius: '20px' }} 
+              className="form-input w-320 search-input" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+            <Search size={18} className="search-icon-pos text-muted" />
           </div>
           
           <button 
-            className="btn btn-primary" 
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 16px', borderRadius: '20px' }}
+            className="btn btn-primary d-flex align-center gap-8 px-16 py-12" 
+            style={{ borderRadius: '20px' }}
             onClick={() => {
               Swal.fire({
                 title: 'Add New Table',
@@ -80,11 +79,11 @@ const Tables = () => {
       </div>
 
       {/* Tables Grid */}
-      <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
+      <div className="p-24 overflow-y-auto flex-1">
         {filteredTables.length === 0 ? (
-          <div style={{ color: 'var(--text-muted)', padding: '24px 0', textAlign: 'center' }}>No tables match your search.</div>
+          <div className="text-muted p-24 text-center">No tables match your search.</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '20px' }}>
+          <div className="grid-cols-auto-fit gap-20">
             {filteredTables.map(table => {
               const isAvailable = table.status === 'Available';
               const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
@@ -94,28 +93,21 @@ const Tables = () => {
               return (
                 <div 
                   key={table.id}
+                  className="d-flex flex-col radius-md overflow-hidden pos-rel shadow-sm transition-all"
                   style={{
                     backgroundColor: bgColor,
                     border: `2px solid ${isAvailable ? 'var(--border-color)' : statusColor}`,
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                    position: 'relative'
                   }}
                 >
                   {/* Top icon area */}
-                  <div style={{ 
-                    height: '110px', 
-                    backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                    color: statusColor
-                  }}>
+                  <div 
+                    className="d-flex align-center justify-center pos-rel"
+                    style={{ 
+                      height: '110px', 
+                      backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                      color: statusColor
+                    }}
+                  >
                     {/* Table Vector Graphic */}
                     <svg viewBox="0 0 100 100" width="70" height="70">
                       {/* Chairs */}
@@ -127,57 +119,50 @@ const Tables = () => {
                       <rect x="24" y="24" width="52" height="52" rx="12" fill="currentColor" />
                     </svg>
 
-                    <div style={{ 
-                      position: 'absolute', 
-                      fontWeight: 800, 
-                      fontSize: '1.1rem', 
-                      color: 'white', 
-                      textShadow: '0 1px 3px rgba(0,0,0,0.6)',
-                      textAlign: 'center',
-                      width: '100%',
-                      padding: '0 8px'
-                    }}>
+                    <div 
+                      className="pos-abs w-100 text-center text-white fw-700 px-8"
+                      style={{ 
+                        fontSize: '1.1rem', 
+                        textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                      }}
+                    >
                       {table.name}
                     </div>
 
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      backgroundColor: statusColor,
-                      color: 'white',
-                      padding: '4px 10px',
-                      borderRadius: '12px',
-                      fontSize: '0.75rem',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}>
+                    <div 
+                      className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
+                      style={{
+                        top: '10px',
+                        right: '10px',
+                        backgroundColor: statusColor,
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.5px'
+                      }}
+                    >
                       {table.status}
                     </div>
                   </div>
 
                   {/* Details area */}
-                  <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-muted)' }}>
+                  <div className="p-16 flex-1 d-flex flex-col gap-16">
+                    <div className="d-flex justify-between align-center">
+                      <div className="d-flex align-center gap-6 text-muted">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{table.capacity} Pax</span>
+                        <span className="fs-sm fw-600">{table.capacity} Pax</span>
                       </div>
                       
                       {!isAvailable && orderTotal > 0 && (
-                        <div style={{ fontWeight: 700, color: 'var(--primary-color)' }}>
+                        <div className="fw-700 text-primary">
                           ₹{orderTotal}
                         </div>
                       )}
                     </div>
 
                     {/* Action Buttons */}
-                    <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '8px' }}>
+                    <div className="mt-auto pt-16 border-top d-flex gap-8">
                       {isAvailable ? (
                         <button 
-                          className="btn btn-primary"
-                          style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                          className="btn btn-primary flex-1 p-12 d-flex justify-center align-center gap-6"
                           onClick={() => {
                             navigate('/order', { state: { tableId: table.id } });
                           }}
@@ -185,37 +170,23 @@ const Tables = () => {
                           <Plus size={16} /> New Order
                         </button>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className="d-flex flex-col gap-8 w-100">
+                          <div className="d-flex gap-8">
                             <button 
-                              className="btn btn-secondary"
-                              style={{ flex: 1, padding: '10px', fontSize: '0.9rem' }}
+                              className="btn btn-secondary flex-1 p-12 fs-sm"
                               onClick={() => navigate('/order', { state: { tableId: table.id } })}
                             >
                               Add Items
                             </button>
                             <button 
-                              className="btn btn-primary"
-                              style={{ flex: 1, padding: '10px', fontSize: '0.9rem' }}
+                              className="btn btn-primary flex-1 p-12 fs-sm"
                               onClick={() => navigate('/billing', { state: { tableId: table.id } })}
                             >
                               Settle Bill
                             </button>
                           </div>
                           <button 
-                            style={{ 
-                              background: 'transparent',
-                              border: '1px solid var(--border-color)',
-                              color: 'var(--text-main)',
-                              padding: '8px 14px',
-                              borderRadius: 'var(--radius-sm)',
-                              fontSize: '0.85rem',
-                              cursor: 'pointer',
-                              transition: '0.2s',
-                              width: '100%'
-                            }}
-                            onMouseOver={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}
-                            onMouseOut={(e) => e.target.style.background = 'transparent'}
+                            className="btn-clear"
                             onClick={() => {
                               Swal.fire({
                                 title: 'Clear Table & Order?',

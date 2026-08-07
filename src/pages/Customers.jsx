@@ -74,18 +74,20 @@ const Customers = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div className="d-flex justify-between align-center mb-32 flex-wrap gap-16">
         <div>
-          <h2 style={{ margin: '0 0 4px 0' }}>Customer Directory</h2>
-
+          <h2 className="page-title d-flex align-center gap-8">
+            <Users size={24} color="var(--primary-color)" /> Customer Management
+          </h2>
+          <div className="text-muted">Manage your customer database and viewing history</div>
         </div>
-        <button onClick={openAddModal} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
           <Plus size={18} /> Add Customer
         </button>
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto', width: '100%' }}>
+      <div className="glass-panel overflow-hidden">
+        <div className="w-100" style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
@@ -100,28 +102,27 @@ const Customers = () => {
           <tbody>
             {activeCustomers.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                <td colSpan="6" className="text-center p-32 text-muted">
                   No customers added yet.
                 </td>
               </tr>
             ) : (
               activeCustomers.map(customer => {
-                // Derived order count from bills
                 const orderCount = bills.filter(b => b.customerPhone === customer.phone).length;
                 return (
                   <tr key={customer.id}>
                     <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div className="d-flex align-center gap-12">
+                        <div className="radius-full bg-tertiary d-flex align-center justify-center" style={{ width: '36px', height: '36px' }}>
                           <Users size={16} />
                         </div>
-                        <span style={{ fontWeight: 600 }}>{customer.name}</span>
+                        <span className="fw-600">{customer.name}</span>
                       </div>
                     </td>
                     <td style={{ fontFamily: 'monospace' }}>{customer.phone}</td>
                     <td>{customer.address || '-'}</td>
                     <td>
-                      <span className="badge badge-active" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-main)' }}>
+                      <span className="badge badge-active bg-tertiary" style={{ color: 'var(--text-main)' }}>
                         {orderCount} Orders
                       </span>
                     </td>
@@ -129,11 +130,11 @@ const Customers = () => {
                       <span style={{ color: 'var(--status-active)' }}>Active</span>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        <button onClick={() => openEditModal(customer)} className="btn btn-secondary" style={{ padding: '6px' }}>
+                      <div className="d-flex gap-8">
+                        <button onClick={() => openEditModal(customer)} className="btn btn-secondary p-4">
                           <Edit2 size={16} />
                         </button>
-                        <button onClick={() => handleDelete(customer.id)} className="btn btn-secondary" style={{ padding: '6px', color: '#e23744', borderColor: 'rgba(226, 55, 68, 0.2)' }}>
+                        <button onClick={() => handleDelete(customer.id)} className="btn btn-secondary p-4 text-danger border-danger">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -147,36 +148,35 @@ const Customers = () => {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '32px', border: '1px solid var(--border-light)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.4rem' }}>{editItem ? 'Edit Customer' : 'Add Customer'}</h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex' }}>
+        <div className="pos-abs w-100 h-100 d-flex align-center justify-center z-2000 backdrop-blur" style={{ top: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.7)', position: 'fixed' }}>
+          <div className="glass-panel w-100 p-32 border-light shadow-xl" style={{ maxWidth: '400px' }}>
+            <div className="d-flex justify-between align-center mb-32">
+              <h3 className="m-0 fs-xl">{editItem ? 'Edit Customer' : 'Add Customer'}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="bg-transparent border-none text-muted cursor-pointer d-flex">
                 <X size={24} />
               </button>
             </div>
             
-            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSave} className="d-flex flex-col gap-20">
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Full Name *</label>
-                <input type="text" className="form-input" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="John Doe" style={{ padding: '12px', width: '100%' }} />
+                <label className="d-block mb-8 fs-sm text-muted">Full Name *</label>
+                <input type="text" className="form-input p-12 w-100" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="John Doe" />
               </div>
               
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Phone Number *</label>
-                <input type="tel" className="form-input" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} required placeholder="1234567890" style={{ padding: '12px', width: '100%' }} />
+                <label className="d-block mb-8 fs-sm text-muted">Phone Number *</label>
+                <input type="tel" className="form-input p-12 w-100" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} required placeholder="1234567890" />
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Delivery Address (Optional)</label>
-                <textarea className="form-input" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} rows="3" style={{ padding: '12px', width: '100%', resize: 'vertical' }}></textarea>
+                <label className="d-block mb-8 fs-sm text-muted">Delivery Address (Optional)</label>
+                <textarea className="form-input p-12 w-100 resize-y" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} rows="3"></textarea>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary" style={{ padding: '12px 24px' }}>Cancel</button>
-                <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px' }}>Save Customer</button>
+              <div className="d-flex justify-end gap-16 mt-16">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary px-24 py-12">Cancel</button>
+                <button type="submit" className="btn btn-primary px-24 py-12">Save Customer</button>
               </div>
             </form>
           </div>

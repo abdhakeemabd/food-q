@@ -52,18 +52,20 @@ const BillList = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div className="d-flex justify-between align-center mb-32 flex-wrap gap-16">
         <div>
-          <h2 style={{ margin: '0 0 4px 0' }}>Bill History</h2>
-          <div style={{ color: 'var(--text-muted)' }}>Total Bills: {bills.length}</div>
+          <h2 className="page-title d-flex align-center gap-8">
+            <Receipt size={24} color="var(--primary-color)" /> Bill History
+          </h2>
+          <div className="text-muted">Total Bills: {bills.length}</div>
         </div>
-        <button onClick={handleExport} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Download size={18} /> Export to Excel
+        <button onClick={handleExport} className="btn btn-primary d-flex align-center gap-8">
+          <Download size={18} /> Export CSV
         </button>
       </div>
 
-      <div className="glass-panel" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto', width: '100%' }}>
+      <div className="glass-panel overflow-hidden">
+        <div className="w-100" style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
@@ -79,7 +81,7 @@ const BillList = () => {
           <tbody>
             {bills.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                <td colSpan="7" className="text-center p-32 text-muted">
                   No bills generated yet.
                 </td>
               </tr>
@@ -88,25 +90,25 @@ const BillList = () => {
                 <tr key={bill.id}>
                   <td>{new Date(bill.createdDate).toLocaleString()}</td>
                   <td>
-                    <span style={{ fontWeight: 500 }}>{bill.orderType}</span>
-                    {bill.tableId && <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Table ID: {bill.tableId}</div>}
+                    <div className="fw-500">{bill.orderType}</div>
+                    {bill.tableId && <div className="fs-sm text-muted">Table ID: {bill.tableId}</div>}
                   </td>
-                  <td>{bill.items.reduce((sum, i) => sum + i.qty, 0)} items</td>
+                  <td>{bill.items?.length || 0}</td>
                   <td>
                     <span className={`badge ${bill.paymentMethod === 'UPI' ? 'badge-active' : ''}`} style={{ backgroundColor: bill.paymentMethod === 'UPI' ? 'rgba(42, 157, 143, 0.2)' : 'var(--bg-tertiary)', color: bill.paymentMethod === 'UPI' ? 'var(--status-active)' : 'var(--text-main)' }}>
                       {bill.paymentMethod}
                     </span>
                   </td>
-                  <td style={{ fontWeight: 'bold', color: 'var(--primary-color)' }}>₹{bill.totalAmount}</td>
+                  <td className="fw-700 text-primary">₹{bill.totalAmount}</td>
                   <td>
                     <span className={`badge badge-${bill.status.toLowerCase()}`}>{bill.status}</span>
                   </td>
                   <td>
-                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                      <button onClick={() => setSelectedBill(bill)} className="btn btn-secondary" style={{ padding: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="d-flex gap-8 justify-center">
+                      <button onClick={() => setSelectedBill(bill)} className="btn btn-secondary p-6 fs-sm d-flex align-center justify-center">
                         <Eye size={16} />
                       </button>
-                      <button onClick={() => handleDelete(bill.id)} className="btn btn-secondary" style={{ padding: '6px', color: '#e23744', borderColor: 'rgba(226, 55, 68, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <button onClick={() => handleDelete(bill.id)} className="btn btn-secondary p-6 text-danger border-danger d-flex align-center justify-center">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -119,56 +121,56 @@ const BillList = () => {
         </div>
       </div>
 
-      {/* Bill View Modal */}
+      {/* Receipt Modal */}
       {selectedBill && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div className="glass-panel" style={{ width: '100%', maxWidth: '400px', padding: '24px', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+        <div className="pos-abs w-100 h-100 d-flex align-center justify-center z-2000" style={{ top: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.5)', position: 'fixed' }}>
+          <div className="glass-panel w-100 p-24 bg-secondary text-main border-light radius-md" style={{ maxWidth: '400px' }}>
             
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed var(--border-color)', paddingBottom: '16px', marginBottom: '16px' }}>
+            <div className="d-flex justify-between align-center mb-16 pb-16" style={{ borderBottom: '1px dashed var(--border-color)' }}>
               <div>
-                <h3 style={{ margin: '0 0 4px 0' }}>Food-Q Receipt</h3>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Date: {new Date(selectedBill.createdDate).toLocaleString()}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Order: {selectedBill.orderType} {selectedBill.tableId ? `- Table ${selectedBill.tableId}` : ''}</div>
+                <h3 className="m-0 mb-4">Food-Q Receipt</h3>
+                <div className="fs-sm text-muted">Date: {new Date(selectedBill.createdDate).toLocaleString()}</div>
+                <div className="fs-sm text-muted">Order: {selectedBill.orderType} {selectedBill.tableId ? `- Table ${selectedBill.tableId}` : ''}</div>
               </div>
-              <button onClick={() => setSelectedBill(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer' }}>
+              <button onClick={() => setSelectedBill(null)} className="bg-transparent border-none text-main cursor-pointer">
                 <X size={24} />
               </button>
             </div>
             
             {/* Items */}
-            <div style={{ borderBottom: '1px dashed var(--border-color)', paddingBottom: '16px', marginBottom: '16px', maxHeight: '300px', overflowY: 'auto' }}>
-              {selectedBill.items.map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 500 }}>{item.itemName}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.qty} x ₹{item.price}</div>
+            <div className="mb-16 pb-16 overflow-y-auto" style={{ borderBottom: '1px dashed var(--border-color)', maxHeight: '300px' }}>
+              {selectedBill.items?.map((item, idx) => (
+                <div key={idx} className="d-flex justify-between mb-8 fs-sm">
+                  <div className="flex-1">
+                    <div className="fw-500">{item.itemName}</div>
+                    <div className="fs-sm text-muted">{item.qty} x ₹{item.price}</div>
                   </div>
-                  <div style={{ fontWeight: 600 }}>₹{item.qty * item.price}</div>
+                  <div className="fw-600">₹{item.qty * item.price}</div>
                 </div>
               ))}
             </div>
 
-            {/* Footer */}
+            {/* Total */}
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, marginBottom: '8px' }}>
-                <span>Total:</span>
-                <span style={{ color: 'var(--primary-color)' }}>₹{selectedBill.totalAmount}</span>
+              <div className="d-flex justify-between mb-8 fs-lg fw-700">
+                <span>Total Amount</span>
+                <span className="text-primary">₹{selectedBill.totalAmount}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Payment Method:</span>
-                <span style={{ fontWeight: 500 }}>{selectedBill.paymentMethod}</span>
+              <div className="d-flex justify-between fs-sm">
+                <span className="text-muted">Payment Method:</span>
+                <span className="fw-500">{selectedBill.paymentMethod}</span>
               </div>
               {selectedBill.customerPhone && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginTop: '4px' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Customer:</span>
-                  <span style={{ fontWeight: 500 }}>{selectedBill.customerPhone}</span>
+                <div className="d-flex justify-between fs-sm mt-4">
+                  <span className="text-muted">Customer:</span>
+                  <span className="fw-500">{selectedBill.customerPhone}</span>
                 </div>
               )}
             </div>
             
-            <button onClick={() => setSelectedBill(null)} className="btn btn-primary" style={{ width: '100%', marginTop: '24px', padding: '12px' }}>
-              Close Receipt
+            <button onClick={() => setSelectedBill(null)} className="btn btn-primary w-100 mt-24 p-12">
+              Close
             </button>
 
           </div>

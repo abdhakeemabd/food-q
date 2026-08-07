@@ -13,7 +13,9 @@ import {
   LogOut,
   Menu,
   User,
-  LayoutGrid
+  LayoutGrid,
+  Wallet,
+  Calendar
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
@@ -21,20 +23,10 @@ const SidebarItem = ({ to, icon: Icon, label, onClick }) => (
   <NavLink 
     to={to} 
     onClick={onClick}
-    style={({ isActive }) => ({
-      display: 'flex',
-      alignItems: 'center',
-      gap: '12px',
-      padding: '12px 20px',
-      color: isActive ? 'white' : 'var(--text-muted)',
-      backgroundColor: isActive ? 'var(--primary-color)' : 'transparent',
-      textDecoration: 'none',
-      transition: 'var(--transition-fast)',
-      borderLeft: isActive ? '4px solid white' : '4px solid transparent'
-    })}
+    className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
   >
     <Icon size={20} />
-    <span style={{ fontWeight: 500 }}>{label}</span>
+    <span className="fw-500">{label}</span>
   </NavLink>
 );
 
@@ -85,31 +77,33 @@ const Layout = () => {
       {/* Mobile Overlay */}
       {sidebarOpen && window.innerWidth <= 1024 && (
         <div 
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }}
+          className="pos-abs w-100 h-100"
+          style={{ top: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 999 }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
       {/* Sidebar */}
       <aside className={`sidebar ${!sidebarOpen ? 'closed' : ''}`} style={window.innerWidth > 1024 ? { width: sidebarOpen ? '260px' : '0' } : {}}>
-        <div style={{ height: '70px', display: 'flex', alignItems: 'center', padding: '0 24px', borderBottom: '1px solid var(--border-color)' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '8px', overflow: 'hidden', marginRight: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src={logoImg} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }} />
+        <div className="sidebar-header">
+            <div className="d-flex align-center justify-center overflow-hidden radius-sm mr-12" style={{ width: '40px', height: '40px' }}>
+              <img src={logoImg} alt="Logo" className="w-100 h-100 radius-sm object-cover" />
             </div>
-          <h2 style={{ margin: 0, fontSize: '1.3rem', color: 'var(--primary-color)', fontWeight: 700 }}>Food-Q</h2>
+          <h2 className="m-0 text-primary fw-700" style={{ fontSize: '1.3rem' }}>Food-Q</h2>
         </div>
         
-        <nav style={{ flex: 1, padding: '24px 0', display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto' }}>
+        <nav className="flex-1 d-flex flex-col gap-4 overflow-hidden py-24 overflow-y-auto">
           <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" onClick={handleLinkClick} />
           <SidebarItem to="/billing" icon={Receipt} label="Add Bill (POS)" onClick={handleLinkClick} />
           <SidebarItem to="/tables" icon={LayoutGrid} label="Tables" onClick={handleLinkClick} />
           <SidebarItem to="/bills" icon={Receipt} label="Bill History" onClick={handleLinkClick} />
           <SidebarItem to="/finance" icon={BarChart3} label="Income/Expenses" onClick={handleLinkClick} />
+          <SidebarItem to="/daily-tracker" icon={Wallet} label="Daily Tracker" onClick={handleLinkClick} />
           <SidebarItem to="/inventory" icon={Package} label="Inventory" onClick={handleLinkClick} />
           <SidebarItem to="/customers" icon={Users} label="Customers" onClick={handleLinkClick} />
           
           {isAdmin && (
             <>
-              <div style={{ padding: '16px 24px 8px', fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.05em' }}>
+              <div className="text-muted fw-600 text-uppercase" style={{ padding: '16px 24px 8px', fontSize: '0.75rem', letterSpacing: '0.05em' }}>
                 Admin
               </div>
               <SidebarItem to="/employees" icon={Users} label="Staff" onClick={handleLinkClick} />
@@ -120,32 +114,32 @@ const Layout = () => {
         </nav>
       </aside>
 
-      {/* Main Content */}
+    {/* Main Content */}
       <main className="main-content">
         <header className="topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="d-flex align-center gap-16">
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{ background: 'transparent', border: 'none', color: 'var(--text-main)', cursor: 'pointer', padding: '4px' }}
+              className="p-4 bg-transparent border-none cursor-pointer"
+              style={{ color: 'var(--text-main)' }}
             >
               <Menu size={24} />
             </button>
-            <h3 style={{ margin: 0, fontWeight: 500 }}>{/* Route Title could go here */}</h3>
+            <h3 className="m-0 fw-500">{/* Route Title could go here */}</h3>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div className="d-flex align-center gap-16">
              {/* Header User Profile & Logout */}
-             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '16px', borderLeft: '1px solid var(--border-color)' }}>
-                <div className="hide-on-mobile" style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{currentUser?.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--primary-color)' }}>{currentUser?.role}</div>
+             <div className="d-flex align-center gap-12 pl-16 border-left">
+                <div className="hide-on-mobile text-right">
+                  <div className="fw-600 fs-sm">{currentUser?.name}</div>
+                  <div className="fs-xs text-primary">{currentUser?.role}</div>
                 </div>
-                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div className="d-flex align-center justify-center radius-full" style={{ width: '36px', height: '36px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '50%' }}>
                   <User size={18} />
                 </div>
                 <button 
                   onClick={handleLogout}
-                  className="btn btn-secondary" 
-                  style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}
+                  className="btn btn-secondary d-flex align-center gap-6 fs-sm px-12 py-6" 
                   title="Logout"
                 >
                   <LogOut size={16} />
