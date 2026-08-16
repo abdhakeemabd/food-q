@@ -115,8 +115,9 @@ const Billing = () => {
       title: 'Success!',
       text: 'Bill generated successfully!',
       icon: 'success',
-      timer: 2000,
-      showConfirmButton: false
+      timer: 5000,
+      timerProgressBar: true,
+      showConfirmButton: true
     });
   };
 

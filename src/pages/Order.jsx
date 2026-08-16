@@ -88,8 +88,9 @@ const Order = () => {
       title: 'KOT Saved!',
       text: 'Order sent to kitchen.',
       icon: 'success',
-      timer: 1500,
-      showConfirmButton: false
+      timer: 5000,
+      timerProgressBar: true,
+      showConfirmButton: true
     });
     
     navigate('/tables');
