@@ -81,7 +81,7 @@ const Finance = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteRecord(activeCollection, id, currentUser);
-        Swal.fire('Deleted!', 'Record has been deleted.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Record has been deleted.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };

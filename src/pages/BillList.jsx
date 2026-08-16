@@ -22,7 +22,7 @@ const BillList = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteRecord('bills', id, currentUser);
-        Swal.fire('Deleted!', 'The bill has been deleted.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'The bill has been deleted.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };

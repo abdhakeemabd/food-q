@@ -68,7 +68,7 @@ const Tables = () => {
               }).then((result) => {
                 if (result.isConfirmed) {
                   addTable(result.value, currentUser);
-                  Swal.fire('Added!', 'New table has been added.', 'success');
+                  Swal.fire({ title: 'Added!', text: 'New table has been added.', icon: 'success', timer: 5000, timerProgressBar: true });
                 }
               });
             }}
@@ -199,7 +199,7 @@ const Tables = () => {
                               }).then((result) => {
                                 if (result.isConfirmed) {
                                   clearTableOrder(table.id);
-                                  Swal.fire('Cleared!', 'Table is now available.', 'success');
+                                  Swal.fire({ title: 'Cleared!', text: 'Table is now available.', icon: 'success', timer: 5000, timerProgressBar: true });
                                 }
                               })
                             }}

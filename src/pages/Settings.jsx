@@ -54,7 +54,7 @@ const Settings = () => {
 
     await addRecord('categories', { name: trimmed }, currentUser);
     setNewCatName('');
-    Swal.fire('Added!', `Category "${trimmed}" has been created.`, 'success');
+    Swal.fire({ title: 'Added!', text: `Category "${trimmed}" has been created.`, icon: 'success', timer: 5000, timerProgressBar: true });
   };
 
   const handleOpenAddModal = async () => {
@@ -121,7 +121,7 @@ const Settings = () => {
         await updateRecord('inventory', item.id, { category: trimmedNew }, currentUser);
       }
 
-      Swal.fire('Updated!', `Category changed to "${trimmedNew}".`, 'success');
+      Swal.fire({ title: 'Updated!', text: `Category changed to "${trimmedNew}".`, icon: 'success', timer: 5000, timerProgressBar: true });
     }
   };
 
@@ -153,7 +153,7 @@ const Settings = () => {
           categories: state.categories.filter(c => getCategoryName(c).toLowerCase() !== cat.name.toLowerCase())
         }));
 
-        Swal.fire('Deleted!', 'Category has been removed.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Category has been removed.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };
@@ -184,7 +184,7 @@ const Settings = () => {
     }
     await addRecord('roles', { name: trimmed }, currentUser);
     setNewRoleName('');
-    Swal.fire('Added!', `Role "${trimmed}" has been created.`, 'success');
+    Swal.fire({ title: 'Added!', text: `Role "${trimmed}" has been created.`, icon: 'success', timer: 5000, timerProgressBar: true });
   };
 
   const handleOpenAddRoleModal = async () => {
@@ -231,7 +231,7 @@ const Settings = () => {
             roles: state.roles.filter(r => (typeof r === 'string' ? r : r.name).toLowerCase() !== roleItem.name.toLowerCase())
           }));
         }
-        Swal.fire('Deleted!', 'Role has been removed.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Role has been removed.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };

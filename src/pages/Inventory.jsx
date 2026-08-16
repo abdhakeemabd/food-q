@@ -69,10 +69,10 @@ const Inventory = () => {
 
     if (editItem) {
       updateRecord('inventory', editItem.id, payload, currentUser);
-      Swal.fire('Updated!', 'Menu item has been updated.', 'success');
+      Swal.fire({ title: 'Updated!', text: 'Menu item has been updated.', icon: 'success', timer: 5000, timerProgressBar: true });
     } else {
       addRecord('inventory', payload, currentUser);
-      Swal.fire('Added!', 'New menu item has been added.', 'success');
+      Swal.fire({ title: 'Added!', text: 'New menu item has been added.', icon: 'success', timer: 5000, timerProgressBar: true });
     }
     setIsModalOpen(false);
   };
@@ -88,7 +88,7 @@ const Inventory = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteRecord('inventory', id, currentUser);
-        Swal.fire('Deleted!', 'Item has been deleted.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Item has been deleted.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };

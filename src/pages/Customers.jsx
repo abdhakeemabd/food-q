@@ -48,10 +48,10 @@ const Customers = () => {
 
     if (editItem) {
       updateRecord('customers', editItem.id, formData, currentUser);
-      Swal.fire('Updated!', 'Customer details updated.', 'success');
+      Swal.fire({ title: 'Updated!', text: 'Customer details updated.', icon: 'success', timer: 5000, timerProgressBar: true });
     } else {
       addRecord('customers', formData, currentUser);
-      Swal.fire('Added!', 'New customer added.', 'success');
+      Swal.fire({ title: 'Added!', text: 'New customer added.', icon: 'success', timer: 5000, timerProgressBar: true });
     }
     setIsModalOpen(false);
   };
@@ -67,7 +67,7 @@ const Customers = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteRecord('customers', id, currentUser);
-        Swal.fire('Deleted!', 'Customer removed.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Customer removed.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };

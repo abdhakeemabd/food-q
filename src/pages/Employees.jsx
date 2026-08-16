@@ -89,10 +89,10 @@ const Employees = () => {
 
     if (editItem) {
       updateRecord('employees', editItem.id, payload, currentUser);
-      Swal.fire('Updated!', 'Staff details updated.', 'success');
+      Swal.fire({ title: 'Updated!', text: 'Staff details updated.', icon: 'success', timer: 5000, timerProgressBar: true });
     } else {
       addRecord('employees', payload, currentUser);
-      Swal.fire('Added!', 'New staff member added.', 'success');
+      Swal.fire({ title: 'Added!', text: 'New staff member added.', icon: 'success', timer: 5000, timerProgressBar: true });
     }
     setIsModalOpen(false);
   };
@@ -108,7 +108,7 @@ const Employees = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteRecord('employees', id, currentUser);
-        Swal.fire('Deleted!', 'Staff member removed.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Staff member removed.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };
@@ -162,7 +162,7 @@ const Employees = () => {
     }, currentUser);
 
     setIsSalaryModalOpen(false);
-    Swal.fire('Paid!', `Salary payout recorded for ${salaryForm.employee_name}.`, 'success');
+    Swal.fire({ title: 'Paid!', text: `Salary payout recorded for ${salaryForm.employee_name}.`, icon: 'success', timer: 5000, timerProgressBar: true });
   };
 
   const handleDeleteSalaryRecord = (id) => {
@@ -176,7 +176,7 @@ const Employees = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         deleteRecord('salary-records', id, currentUser);
-        Swal.fire('Deleted!', 'Payout record removed.', 'success');
+        Swal.fire({ title: 'Deleted!', text: 'Payout record removed.', icon: 'success', timer: 5000, timerProgressBar: true });
       }
     });
   };
