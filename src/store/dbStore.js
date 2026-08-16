@@ -277,7 +277,7 @@ export const useDbStore = create((set, get) => ({
       const res = await fetchWithAuth(`${API_URL}/api/bills/`, {
          method: 'POST',
          headers: getAuthHeaders(),
-         body: JSON.stringify(payload)
+         body: JSON.stringify(savedBill)
       });
       if (res.ok) {
         savedBill = await res.json();
