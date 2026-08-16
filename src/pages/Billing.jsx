@@ -301,12 +301,14 @@ const Billing = () => {
                 return (
                   <div 
                     key={item.id} 
-                    className="bg-tertiary radius-md overflow-hidden d-flex flex-col transition-all"
+                    className="bg-tertiary radius-md overflow-hidden d-flex flex-col transition-all pos-rel"
                     style={{ 
-                      border: qty > 0 ? '2px solid var(--primary-color)' : '2px solid var(--border-color)'
+                      border: qty > 0 ? '2px solid var(--primary-color)' : '2px solid var(--border-color)',
+                      boxShadow: qty > 0 ? '0 4px 14px rgba(226, 55, 68, 0.25)' : 'none',
+                      userSelect: 'none'
                     }}
                   >
-                    {/* Image Placeholder */}
+                    {/* Image Container */}
                     <div className="d-flex align-center justify-center pos-rel overflow-hidden" style={{ height: '110px', backgroundColor: 'rgba(255,255,255,0.05)' }}>
                       {item.img ? (
                         <img 
@@ -322,24 +324,65 @@ const Billing = () => {
                       ) : (
                         <span className="fs-2xl">🍲</span>
                       )}
+                      
+                      {qty > 0 && (
+                        <div 
+                          className="pos-abs px-8 py-2 radius-sm fw-700 fs-xs text-white" 
+                          style={{ top: '8px', right: '8px', background: 'var(--primary-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
+                        >
+                          {qty} in cart
+                        </div>
+                      )}
                     </div>
                     
                     <div className="p-12 flex-1 d-flex flex-col justify-between">
                       <div>
-                        <div className="fw-600 mb-4" style={{ fontSize: '0.95rem' }}>{item.itemName}</div>
-                        <div className="text-muted mb-12 fs-sm">₹{item.price}</div>
+                        <div className="fw-600 mb-4" style={{ fontSize: '0.95rem', color: '#ffffff', wordBreak: 'break-word' }}>{item.itemName}</div>
+                        <div className="fw-500 mb-12 fs-sm" style={{ color: '#94a3b8' }}>₹{Number(item.price).toFixed(2)}</div>
                       </div>
                       
-                      {/* +/- Controls */}
+                      {/* Redesigned +/- Controls */}
                       {qty === 0 ? (
-                        <button onClick={() => increaseQty(item)} className="btn btn-primary w-100 p-6">
-                          Add
+                        <button 
+                          type="button"
+                          onClick={() => increaseQty(item)} 
+                          className="btn btn-primary w-100 p-8 fw-600 d-flex align-center justify-center gap-6"
+                          style={{ borderRadius: '10px' }}
+                        >
+                          <Plus size={16} /> Add
                         </button>
                       ) : (
-                        <div className="d-flex align-center justify-between bg-primary radius-sm overflow-hidden text-white">
-                          <button onClick={() => decreaseQty(item.id)} className="p-8 bg-transparent border-none text-white cursor-pointer d-flex align-center justify-center"><Minus size={16} /></button>
-                          <span className="fw-600 px-12">{qty}</span>
-                          <button onClick={() => increaseQty(item)} className="p-8 bg-transparent border-none text-white cursor-pointer d-flex align-center justify-center"><Plus size={16} /></button>
+                        <div 
+                          className="d-flex align-center justify-between w-100 p-4 radius-md" 
+                          style={{ 
+                            background: 'rgba(226, 55, 68, 0.15)', 
+                            border: '1px solid rgba(226, 55, 68, 0.5)',
+                            borderRadius: '10px'
+                          }}
+                        >
+                          <button 
+                            type="button"
+                            onClick={() => decreaseQty(item.id)} 
+                            className="d-flex align-center justify-center border-none text-white cursor-pointer radius-sm transition-all"
+                            style={{ width: '32px', height: '32px', background: '#e23744', borderRadius: '8px', boxShadow: '0 2px 6px rgba(226, 55, 68, 0.4)' }}
+                            title="Decrease Quantity"
+                          >
+                            <Minus size={16} />
+                          </button>
+                          
+                          <span className="fw-700 fs-md px-8" style={{ color: '#ffffff', minWidth: '32px', textAlign: 'center' }}>
+                            {qty}
+                          </span>
+                          
+                          <button 
+                            type="button"
+                            onClick={() => increaseQty(item)} 
+                            className="d-flex align-center justify-center border-none text-white cursor-pointer radius-sm transition-all"
+                            style={{ width: '32px', height: '32px', background: '#e23744', borderRadius: '8px', boxShadow: '0 2px 6px rgba(226, 55, 68, 0.4)' }}
+                            title="Increase Quantity"
+                          >
+                            <Plus size={16} />
+                          </button>
                         </div>
                       )}
                     </div>
