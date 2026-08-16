@@ -269,13 +269,15 @@ export const useDbStore = create((set, get) => ({
       status: 'Active',
       createdBy: user?.name || 'System',
       createdDate: new Date().toISOString(),
+      amount_paid: billData.totalAmount || billData.total || 0,
+      payment_method: (billData.paymentMethod || 'cash').toLowerCase()
     };
 
     try {
       const res = await fetchWithAuth(`${API_URL}/api/bills/`, {
          method: 'POST',
          headers: getAuthHeaders(),
-         body: JSON.stringify(billData)
+         body: JSON.stringify(payload)
       });
       if (res.ok) {
         savedBill = await res.json();
