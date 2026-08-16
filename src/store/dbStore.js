@@ -280,7 +280,14 @@ export const useDbStore = create((set, get) => ({
          body: JSON.stringify(savedBill)
       });
       if (res.ok) {
-        savedBill = await res.json();
+        const backendBill = await res.json();
+        savedBill = {
+          ...savedBill,
+          ...backendBill,
+          items: (backendBill.items && backendBill.items.length > 0) 
+            ? backendBill.items.map(i => ({ ...i, qty: i.quantity || i.qty || 1, itemName: i.item_name || i.itemName || 'Item' })) 
+            : (billData.items || savedBill.items || [])
+        };
       }
     } catch(e) { console.error(e) }
 
