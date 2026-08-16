@@ -88,20 +88,20 @@ const BillList = () => {
             ) : (
               bills.slice().reverse().map(bill => (
                 <tr key={bill.id}>
-                  <td>{new Date(bill.createdDate).toLocaleString()}</td>
+                  <td>{new Date(bill.createdDate || Date.now()).toLocaleString()}</td>
                   <td>
-                    <div className="fw-500">{bill.orderType}</div>
+                    <div className="fw-500">{bill.orderType || 'Dine In'}</div>
                     {bill.tableId && <div className="fs-sm text-muted">Table ID: {bill.tableId}</div>}
                   </td>
-                  <td>{bill.items?.length || 0}</td>
+                  <td>{Array.isArray(bill.items) ? bill.items.length : 0}</td>
                   <td>
                     <span className={`badge ${bill.paymentMethod === 'UPI' ? 'badge-active' : ''}`} style={{ backgroundColor: bill.paymentMethod === 'UPI' ? 'rgba(42, 157, 143, 0.2)' : 'var(--bg-tertiary)', color: bill.paymentMethod === 'UPI' ? 'var(--status-active)' : 'var(--text-main)' }}>
-                      {bill.paymentMethod}
+                      {bill.paymentMethod || 'Cash'}
                     </span>
                   </td>
-                  <td className="fw-700 text-primary">₹{bill.totalAmount}</td>
+                  <td className="fw-700 text-primary">₹{bill.totalAmount || bill.amount_paid || 0}</td>
                   <td>
-                    <span className={`badge badge-${bill.status.toLowerCase()}`}>{bill.status}</span>
+                    <span className={`badge badge-${(bill?.status || 'Paid').toLowerCase()}`}>{bill?.status || 'Paid'}</span>
                   </td>
                   <td>
                     <div className="d-flex gap-8 justify-center">

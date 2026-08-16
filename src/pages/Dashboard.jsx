@@ -75,15 +75,15 @@ const Dashboard = () => {
               ) : (
                 recentBills.map(bill => (
                   <tr key={bill.id}>
-                    <td className="fw-600" style={{ fontFamily: 'monospace' }}>#{bill.id.toUpperCase()}</td>
-                    <td>{new Date(bill.createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td className="fw-600" style={{ fontFamily: 'monospace' }}>#{String(bill?.id || 'BILL').toUpperCase()}</td>
+                    <td>{bill?.createdDate ? new Date(bill.createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</td>
                     <td>
-                      <span className="fw-500">{bill.orderType}</span>
+                      <span className="fw-500">{bill?.orderType || 'Dine In'}</span>
                     </td>
-                    <td>{bill.items.reduce((sum, i) => sum + i.qty, 0)} items</td>
-                    <td className="fw-700 text-primary">₹{bill.totalAmount}</td>
+                    <td>{Array.isArray(bill?.items) ? bill.items.reduce((sum, i) => sum + (i?.qty || 1), 0) : 0} items</td>
+                    <td className="fw-700 text-primary">₹{bill?.totalAmount || bill?.amount_paid || 0}</td>
                     <td>
-                      <span className={`badge badge-${bill.status.toLowerCase()}`}>{bill.status}</span>
+                      <span className={`badge badge-${(bill?.status || 'Paid').toLowerCase()}`}>{bill?.status || 'Paid'}</span>
                     </td>
                   </tr>
                 ))

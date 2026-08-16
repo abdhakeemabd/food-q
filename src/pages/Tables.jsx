@@ -17,8 +17,8 @@ const Tables = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredTables = tables.filter(t => 
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.status.toLowerCase().includes(searchQuery.toLowerCase())
+    (t?.name || `Table ${t?.number || t?.id || ''}`).toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+    (t?.status || '').toLowerCase().includes((searchQuery || '').toLowerCase())
   );
 
   return (

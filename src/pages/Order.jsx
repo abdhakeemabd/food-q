@@ -34,14 +34,14 @@ const Order = () => {
 
   const categories = ['All', ...new Set(inventory.map(item => item.category))];
   const filteredInventory = inventory.filter(i => {
-    const matchCategory = selectedCategory === 'All' || i.category === selectedCategory;
-    const matchSearch = i.itemName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCategory = selectedCategory === 'All' || i?.category === selectedCategory;
+    const matchSearch = (i?.itemName || i?.name || '').toLowerCase().includes((searchQuery || '').toLowerCase());
     return matchCategory && matchSearch;
   });
 
   const filteredTables = tables.filter(t => 
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    t.status.toLowerCase().includes(searchQuery.toLowerCase())
+    (t?.name || `Table ${t?.number || t?.id || ''}`).toLowerCase().includes((searchQuery || '').toLowerCase()) || 
+    (t?.status || '').toLowerCase().includes((searchQuery || '').toLowerCase())
   );
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
