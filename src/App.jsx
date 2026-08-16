@@ -15,9 +15,7 @@ import Inventory from './pages/Inventory';
 import Customers from './pages/Customers';
 import Reports from './pages/Reports';
 import Tables from './pages/Tables';
-
-// Placeholder Pages
-const Settings = () => <div><h2>Settings</h2><p>System configuration</p></div>;
+import Settings from './pages/Settings';
 
 const Login = () => {
   const { login } = useAuth();

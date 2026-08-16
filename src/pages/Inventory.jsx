@@ -23,34 +23,40 @@ const Inventory = () => {
     img: ''
   });
 
-  const categories = ['Main Course', 'Chicken', 'Breads', 'Combos', 'Beverages', 'Hot Drinks', 'Desserts', 'Extras'];
+  const backendCategories = useDbStore(state => state.categories);
 
-  const filteredInventory = inventory.filter(i => 
-    i.status !== 'Archived' && 
-    i.itemName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const categoriesList = Array.from(new Set([
+    ...backendCategories.map(c => (typeof c === 'string' ? c : c?.name)).filter(Boolean),
+    ...inventory.map(i => i.category).filter(Boolean)
+  ]));
+  const categories = categoriesList.length > 0 ? categoriesList : ['Main Course'];
+
+  const filteredInventory = inventory.filter(i => {
+    const name = i?.itemName || i?.name || '';
+    return i?.status !== 'Archived' && name.toLowerCase().includes((searchQuery || '').toLowerCase());
+  });
 
   const openAddModal = () => {
     setEditItem(null);
-    setFormData({ itemName: '', category: 'Main Course', price: '', quantity: '', img: '' });
+    setFormData({ itemName: '', category: categories[0] || 'Main Course', price: '', quantity: '', img: '' });
     setIsModalOpen(true);
   };
 
   const openEditModal = (item) => {
     setEditItem(item);
     setFormData({ 
-      itemName: item.itemName, 
-      category: item.category, 
-      price: item.price, 
-      quantity: item.quantity, 
-      img: item.img || '' 
+      itemName: item?.itemName || item?.name || '', 
+      category: item?.category || categories[0] || 'Main Course', 
+      price: item?.price || '', 
+      quantity: item?.stock !== undefined ? item.stock : (item?.quantity || 0), 
+      img: item?.img || '' 
     });
     setIsModalOpen(true);
   };
 
   const handleSave = (e) => {
     e.preventDefault();
-    if (!formData.itemName || !formData.price || !formData.quantity) {
+    if (!formData.itemName || !formData.price || !formData.quantity || !formData.category) {
       Swal.fire('Error', 'Please fill all required fields', 'error');
       return;
     }
@@ -149,7 +155,7 @@ const Inventory = () => {
                       </div>
                     )}
                   </td>
-                  <td className="fw-600">{item.itemName}</td>
+                  <td className="fw-600">{item.itemName || item.name || 'Unnamed Item'}</td>
                   <td>{item.category}</td>
                   <td className="text-primary fw-600">₹{item.price}</td>
                   <td>
@@ -196,7 +202,11 @@ const Inventory = () => {
               
               <div>
                 <label className="d-block mb-8 fs-sm text-muted">Category *</label>
-                <select className="form-input p-12" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+                <select 
+                  className="form-input p-12" 
+                  value={formData.category} 
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
+                >
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>

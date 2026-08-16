@@ -146,7 +146,7 @@ const Order = () => {
               {filteredTables.length === 0 ? (
                 <div className="text-muted py-24 text-center">No tables match your search.</div>
               ) : (
-                <div className="grid-cols-auto-fit gap-20">
+                <div className="grid-cols-auto-fill gap-20">
                   {filteredTables.map(table => {
                     const isAvailable = table.status === 'Available';
                   const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
@@ -192,7 +192,7 @@ const Order = () => {
                             textShadow: '0 1px 3px rgba(0,0,0,0.6)'
                           }}
                         >
-                          {table.name}
+                          {table.name || `Table ${table.number}`}
                         </div>
 
                         <div 
@@ -230,7 +230,7 @@ const Order = () => {
               )}
             </div>
           ) : (
-            <div className="grid-cols-auto-fit gap-16">
+            <div className="grid-cols-auto-fill gap-16">
               {filteredInventory.map(item => {
                 const qty = getProductQty(item.id);
                 return (

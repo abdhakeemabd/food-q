@@ -38,6 +38,7 @@ export const useDbStore = create((set, get) => ({
   expenses: [],
   income: [],
   employees: [],
+  roles: [],
   salaryRecords: [],
   auditLogs: [],
   activeOrders: {},
@@ -45,14 +46,19 @@ export const useDbStore = create((set, get) => ({
   // Fetch all core data from Node/Django backend
   fetchAllData: async () => {
     try {
-      const [invRes, tablesRes, customersRes, categoriesRes, billsRes, expRes, trackRes] = await Promise.all([
+      const [invRes, tablesRes, customersRes, categoriesRes, billsRes, expRes, trackRes, expensesRes, incomeRes, empRes, rolesRes, salRes] = await Promise.all([
         fetchWithAuth(`${API_URL}/api/inventory/`).catch(() => ({ ok: false, json: () => [] })),
         fetchWithAuth(`${API_URL}/api/tables/`).catch(() => ({ ok: false, json: () => [] })),
         fetchWithAuth(`${API_URL}/api/customers/`).catch(() => ({ ok: false, json: () => [] })),
         fetchWithAuth(`${API_URL}/api/categories/`).catch(() => ({ ok: false, json: () => [] })),
         fetchWithAuth(`${API_URL}/api/bills/`).catch(() => ({ ok: false, json: () => [] })),
         fetchWithAuth(`${API_URL}/api/daily-expenses/`).catch(() => ({ ok: false, json: () => [] })),
-        fetchWithAuth(`${API_URL}/api/daily-trackers/`).catch(() => ({ ok: false, json: () => [] }))
+        fetchWithAuth(`${API_URL}/api/daily-trackers/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/expenses/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/income/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/employees/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/roles/`).catch(() => ({ ok: false, json: () => [] })),
+        fetchWithAuth(`${API_URL}/api/salary-records/`).catch(() => ({ ok: false, json: () => [] }))
       ]);
 
       const inventoryRaw = invRes.ok ? await invRes.json() : [];
@@ -90,6 +96,21 @@ export const useDbStore = create((set, get) => ({
       const dailyTrackersRaw = trackRes.ok ? await trackRes.json() : [];
       const dailyTrackers = Array.isArray(dailyTrackersRaw) ? dailyTrackersRaw : [];
 
+      const expensesRaw = expensesRes.ok ? await expensesRes.json() : [];
+      const expenses = Array.isArray(expensesRaw) ? expensesRaw : [];
+
+      const incomeRaw = incomeRes.ok ? await incomeRes.json() : [];
+      const income = Array.isArray(incomeRaw) ? incomeRaw : [];
+
+      const employeesRaw = empRes.ok ? await empRes.json() : [];
+      const employees = Array.isArray(employeesRaw) ? employeesRaw : [];
+
+      const rolesRaw = rolesRes.ok ? await rolesRes.json() : [];
+      const roles = Array.isArray(rolesRaw) ? rolesRaw : [];
+
+      const salaryRecordsRaw = salRes.ok ? await salRes.json() : [];
+      const salaryRecords = Array.isArray(salaryRecordsRaw) ? salaryRecordsRaw : [];
+
       set({ 
         inventory, 
         tables, 
@@ -97,7 +118,12 @@ export const useDbStore = create((set, get) => ({
         categories: Array.isArray(categories) ? categories : [],
         bills,
         dailyExpenses,
-        dailyTrackers
+        dailyTrackers,
+        expenses,
+        income,
+        employees,
+        roles,
+        salaryRecords
       });
     } catch (err) {
       console.error("Failed to fetch data from API", err);
@@ -107,7 +133,7 @@ export const useDbStore = create((set, get) => ({
   // Add a record
   addRecord: async (collection, data, user) => {
     let savedRecord = { ...data, id: generateId() }; 
-    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers'];
+    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers', 'expenses', 'income', 'employees', 'roles', 'salary-records'];
     
     if (backendModels.includes(collection)) {
       let payload = { ...data };
@@ -142,17 +168,17 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
 
-    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : collection);
+    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : (collection === 'salary-records' ? 'salaryRecords' : collection));
 
     set((state) => ({
-      [stateKey]: [...state[stateKey], savedRecord],
+      [stateKey]: [...(state[stateKey] || []), savedRecord],
       auditLogs: [...state.auditLogs, log]
     }));
   },
 
   // Update a record
   updateRecord: async (collection, id, data, user) => {
-    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers'];
+    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers', 'expenses', 'income', 'employees', 'roles', 'salary-records'];
     
     if (backendModels.includes(collection)) {
       let payload = { ...data };
@@ -177,11 +203,11 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
 
-    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : collection);
+    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : (collection === 'salary-records' ? 'salaryRecords' : collection));
 
     set((state) => ({
-      [stateKey]: state[stateKey].map(record => 
-        record.id === id ? { ...record, ...data, lastUpdatedBy: user?.name, lastUpdatedDate: new Date().toISOString() } : record
+      [stateKey]: (state[stateKey] || []).map(record => 
+        String(record.id) === String(id) ? { ...record, ...data, lastUpdatedBy: user?.name, lastUpdatedDate: new Date().toISOString() } : record
       ),
       auditLogs: [...state.auditLogs, log]
     }));
@@ -189,7 +215,7 @@ export const useDbStore = create((set, get) => ({
 
   // Soft Delete a record (Move to Archive)
   deleteRecord: async (collection, id, user) => {
-    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers'];
+    const backendModels = ['inventory', 'tables', 'customers', 'categories', 'daily-expenses', 'daily-trackers', 'expenses', 'income', 'employees', 'roles', 'salary-records'];
     
     if (backendModels.includes(collection)) {
       try {
@@ -208,10 +234,10 @@ export const useDbStore = create((set, get) => ({
       timestamp: new Date().toISOString()
     };
 
-    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : collection);
+    const stateKey = collection === 'daily-expenses' ? 'dailyExpenses' : (collection === 'daily-trackers' ? 'dailyTrackers' : (collection === 'salary-records' ? 'salaryRecords' : collection));
 
     set((state) => ({
-      [stateKey]: state[stateKey].filter(record => record.id !== id),
+      [stateKey]: (state[stateKey] || []).filter(record => String(record.id) !== String(id)),
       auditLogs: [...state.auditLogs, log]
     }));
   },
@@ -330,14 +356,28 @@ export const useDbStore = create((set, get) => ({
 
   // Tables
   addTable: async (tableData, user) => {
+    let parsedNumber = tableData.number || tableData.tableNumber;
+    if (!parsedNumber && tableData.name) {
+      const match = String(tableData.name).match(/\d+/);
+      if (match) parsedNumber = parseInt(match[0], 10);
+    }
+    if (!parsedNumber) {
+      parsedNumber = Math.floor(Math.random() * 100) + 1;
+    }
+
+    const tableName = tableData.name || `Table ${parsedNumber}`;
+
     let newTable = {
       ...tableData,
       id: generateId(),
+      name: tableName,
+      number: parsedNumber,
+      capacity: tableData.capacity || 4,
       status: 'Available',
     };
     
     let payload = {
-      number: tableData.tableNumber || Math.floor(Math.random() * 100) + 1,
+      number: parsedNumber,
       capacity: tableData.capacity || 4,
       status: 'available'
     };
@@ -349,7 +389,13 @@ export const useDbStore = create((set, get) => ({
          body: JSON.stringify(payload)
       });
       if (res.ok) {
-         newTable = await res.json();
+         const rawTable = await res.json();
+         newTable = {
+           ...rawTable,
+           name: tableName,
+           tableNumber: String(rawTable.number || parsedNumber),
+           status: 'Available'
+         };
       }
     } catch(e) { console.error(e) }
 
@@ -357,7 +403,7 @@ export const useDbStore = create((set, get) => ({
       const log = {
         id: generateId(),
         action: 'ADD_TABLE',
-        details: `Added new table: ${tableData.name}`,
+        details: `Added new table: ${tableName}`,
         user: user?.name || 'System',
         timestamp: new Date().toISOString()
       };

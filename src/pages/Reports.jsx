@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import * as XLSX from 'xlsx';
-import { Download, Calendar, IndianRupee, TrendingUp, ShoppingBag, ArrowDownRight } from 'lucide-react';
+import { Download, Calendar, IndianRupee, TrendingUp, TrendingDown, ShoppingBag, ArrowDownRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const Reports = () => {
@@ -9,12 +9,14 @@ const Reports = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // YYYY-MM-DD
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
   
-  const bills = useDbStore(state => state.bills).filter(b => b.status !== 'Archived');
-  const expenses = useDbStore(state => state.expenses).filter(e => e.status !== 'Archived');
+  const bills = useDbStore(state => state.bills || []).filter(b => b.status !== 'Archived');
+  const expenses = useDbStore(state => state.expenses || []).filter(e => e.status !== 'Archived');
+  const dailyExpenses = useDbStore(state => state.dailyExpenses || []);
 
   // Filter Data based on selection
   const filteredBills = bills.filter(bill => {
-    const billDate = bill.createdDate.split('T')[0];
+    const rawDate = bill.createdDate || bill.created_at || bill.date || '';
+    const billDate = String(rawDate).split('T')[0];
     if (reportType === 'daily') {
       return billDate === selectedDate;
     } else {
@@ -23,7 +25,16 @@ const Reports = () => {
   });
 
   const filteredExpenses = expenses.filter(exp => {
-    const expDate = exp.date;
+    const expDate = String(exp.date || exp.created_at || '').split('T')[0];
+    if (reportType === 'daily') {
+      return expDate === selectedDate;
+    } else {
+      return expDate.startsWith(selectedMonth);
+    }
+  });
+
+  const filteredDailyExpenses = dailyExpenses.filter(exp => {
+    const expDate = String(exp.date || '').split('T')[0];
     if (reportType === 'daily') {
       return expDate === selectedDate;
     } else {
@@ -32,9 +43,11 @@ const Reports = () => {
   });
 
   // Calculate Metrics
-  const totalRevenue = filteredBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const totalRevenue = filteredBills.reduce((sum, bill) => sum + Number(bill.totalAmount || bill.total || bill.amount_paid || 0), 0);
   const totalOrders = filteredBills.length;
-  const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
+  const financeExpensesSum = filteredExpenses.reduce((sum, exp) => sum + Number(exp.amount || 0), 0);
+  const dailyExpensesSum = filteredDailyExpenses.reduce((sum, exp) => sum + Number(exp.total || 0), 0);
+  const totalExpenses = financeExpensesSum + dailyExpensesSum;
   const netProfit = totalRevenue - totalExpenses;
 
   const handleExport = () => {
