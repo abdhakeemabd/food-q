@@ -110,16 +110,16 @@ const Inventory = () => {
       <div className="glass-panel overflow-hidden">
         <div className="px-24 py-16 border-bottom d-flex justify-between align-center">
           <h3 className="m-0">Menu Items</h3>
-          <div className="pos-rel">
+          <div className="pos-rel d-flex align-center mobile-w-100">
+            <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
             <input 
               type="text" 
               placeholder="Search inventory..." 
-              className="form-input" 
-              style={{ width: '300px', padding: '10px 16px 10px 40px', borderRadius: '20px' }}
+              className="form-input mobile-w-100" 
+              style={{ width: '300px', maxWidth: '100%', padding: '10px 16px 10px 40px', borderRadius: '20px' }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search size={18} className="pos-abs text-muted" style={{ left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
           </div>
         </div>
 

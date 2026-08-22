@@ -32,21 +32,22 @@ const Tables = () => {
           <p className="m-0 text-muted">Manage your dining floor, check status, and take orders.</p>
         </div>
         
-        <div className="d-flex align-center gap-16">
-          <div className="pos-rel">
+        <div className="d-flex flex-wrap align-center gap-12 mobile-w-100 mobile-flex-col">
+          <div className="pos-rel d-flex align-center mobile-w-100">
+            <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
             <input 
               type="text" 
               placeholder="Search table (e.g. Table 1, Available)..." 
-              className="form-input w-320 search-input" 
+              className="form-input w-320 search-input mobile-w-100" 
+              style={{ paddingLeft: '40px', width: '100%' }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search size={18} className="search-icon-pos text-muted" />
           </div>
           
           <button 
-            className="btn btn-primary d-flex align-center gap-8 px-16 py-12" 
-            style={{ borderRadius: '20px' }}
+            className="btn btn-primary d-flex align-center justify-center gap-8 px-16 py-12 mobile-w-100" 
+            style={{ borderRadius: '20px', whiteSpace: 'nowrap' }}
             onClick={() => {
               Swal.fire({
                 title: 'Add New Table',
@@ -85,7 +86,8 @@ const Tables = () => {
         ) : (
           <div className="grid-cols-auto-fill gap-20">
             {filteredTables.map(table => {
-              const isAvailable = table.status === 'Available';
+              const hasKot = Boolean(activeOrders[table.id] && activeOrders[table.id].length > 0);
+              const isAvailable = !hasKot;
               const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
               const bgColor = isAvailable ? 'var(--bg-tertiary)' : 'rgba(239, 68, 68, 0.05)';
               const orderTotal = activeOrders[table.id] ? activeOrders[table.id].reduce((sum, item) => sum + (item.price * item.qty), 0) : 0;
@@ -122,24 +124,25 @@ const Tables = () => {
                     <div 
                       className="pos-abs w-100 text-center text-white fw-700 px-8"
                       style={{ 
-                        fontSize: '1.1rem', 
-                        textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                        fontSize: '1.05rem', 
+                        textShadow: '0 1px 3px rgba(0,0,0,0.6)',
+                        paddingRight: '60px'
                       }}
                     >
                       {table.name || `Table ${table.number}`}
                     </div>
 
                     <div 
-                      className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
+                      className="pos-abs text-white px-8 py-2 radius-sm fw-700 text-uppercase"
                       style={{
-                        top: '10px',
-                        right: '10px',
+                        top: '8px',
+                        right: '8px',
                         backgroundColor: statusColor,
-                        fontSize: '0.75rem',
+                        fontSize: '0.7rem',
                         letterSpacing: '0.5px'
                       }}
                     >
-                      {table.status}
+                      {isAvailable ? 'Available' : 'Occupied'}
                     </div>
                   </div>
 

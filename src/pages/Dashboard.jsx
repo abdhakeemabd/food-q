@@ -8,7 +8,7 @@ const Dashboard = () => {
   const customers = useDbStore(state => state.customers);
 
   // Derived metrics
-  const totalRevenue = bills.reduce((sum, bill) => sum + bill.totalAmount, 0);
+  const totalRevenue = bills.reduce((sum, bill) => sum + Number(bill.totalAmount || bill.amount_paid || bill.total || 0), 0);
   const totalOrders = bills.length;
   const activeItems = inventory.filter(i => i.status === 'Active').length;
   const totalCustomers = customers.length; // Actually, we can derive unique customers from bills if customers list is empty, but let's use the DB array.
@@ -42,7 +42,7 @@ const Dashboard = () => {
       </div>
 
       <div className="mb-32 grid-cols-auto-fit gap-24">
-        <StatCard title="Total Revenue" value={`₹${totalRevenue}`} icon={IndianRupee} color="#e23744" />
+        <StatCard title="Total Revenue" value={`₹${totalRevenue.toFixed(2)}`} icon={IndianRupee} color="#e23744" />
         <StatCard title="Total Orders" value={totalOrders} icon={ShoppingBag} color="#f59e0b" />
         <StatCard title="Active Menu Items" value={activeItems} icon={Utensils} color="#2a9d8f" />
         <StatCard title="Registered Customers" value={totalCustomers} icon={TrendingUp} color="#4361ee" />

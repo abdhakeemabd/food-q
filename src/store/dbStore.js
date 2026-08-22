@@ -4,6 +4,42 @@ import { API_URL } from '../config';
 // Helper to generate IDs for local-only state items
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
+let refreshTokenPromise = null;
+
+const refreshAccessToken = async () => {
+  if (!refreshTokenPromise) {
+    refreshTokenPromise = (async () => {
+      const refreshToken = localStorage.getItem('refresh_token');
+      if (!refreshToken) {
+        localStorage.removeItem('access_token');
+        return null;
+      }
+      try {
+        const res = await fetch(`${API_URL}/api/token/refresh/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh: refreshToken })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.access) {
+            localStorage.setItem('access_token', data.access);
+            return data.access;
+          }
+        }
+      } catch (err) {
+        console.error("Token refresh failed:", err);
+      }
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      return null;
+    })().finally(() => {
+      refreshTokenPromise = null;
+    });
+  }
+  return refreshTokenPromise;
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem('access_token');
   return {
@@ -13,14 +49,44 @@ const getAuthHeaders = () => {
 };
 
 const fetchWithAuth = async (url, options = {}) => {
-  const headers = getAuthHeaders();
-  let res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+  const headers = { ...getAuthHeaders(), ...(options.headers || {}) };
+  let res = await fetch(url, { ...options, headers });
+  
   if (res.status === 401) {
-    localStorage.removeItem('access_token');
-    const retryHeaders = { 'Content-Type': 'application/json' };
-    res = await fetch(url, { ...options, headers: { ...retryHeaders, ...(options.headers || {}) } });
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      const newAccessToken = await refreshAccessToken();
+      if (newAccessToken) {
+        const retryHeaders = { ...headers, 'Authorization': `Bearer ${newAccessToken}` };
+        return await fetch(url, { ...options, headers: retryHeaders });
+      }
+    }
+    
+    // Fallback: Retry without Authorization header
+    const fallbackHeaders = { ...headers };
+    delete fallbackHeaders['Authorization'];
+    res = await fetch(url, { ...options, headers: fallbackHeaders });
   }
   return res;
+};
+
+// Helpers for persisting active KOT orders across refreshes
+const loadActiveOrders = () => {
+  try {
+    const saved = localStorage.getItem('foodq_active_orders');
+    return saved ? JSON.parse(saved) : {};
+  } catch (e) {
+    console.error('Failed to load active orders from localStorage', e);
+    return {};
+  }
+};
+
+const saveActiveOrdersToStorage = (orders) => {
+  try {
+    localStorage.setItem('foodq_active_orders', JSON.stringify(orders));
+  } catch (e) {
+    console.error('Failed to save active orders from localStorage', e);
+  }
 };
 
 export const useDbStore = create((set, get) => ({
@@ -41,7 +107,7 @@ export const useDbStore = create((set, get) => ({
   roles: [],
   salaryRecords: [],
   auditLogs: [],
-  activeOrders: {},
+  activeOrders: loadActiveOrders(),
 
   // Fetch all core data from Node/Django backend
   fetchAllData: async () => {
@@ -70,25 +136,35 @@ export const useDbStore = create((set, get) => ({
         img: i.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80',
       })) : [];
 
+      const activeOrdersMap = get().activeOrders || {};
       const tablesRaw = tablesRes.ok ? await tablesRes.json() : [];
-      const tables = Array.isArray(tablesRaw) ? tablesRaw.map(t => ({
-        ...t,
-        name: t.name || `Table ${t.number}`,
-        tableNumber: String(t.number || t.tableNumber || ''),
-        status: t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Available'
-      })) : [];
+      const tables = Array.isArray(tablesRaw) ? tablesRaw.map(t => {
+        const hasKot = Boolean(activeOrdersMap[t.id] && activeOrdersMap[t.id].length > 0);
+        return {
+          ...t,
+          name: t.name || `Table ${t.number}`,
+          tableNumber: String(t.number || t.tableNumber || ''),
+          status: hasKot ? 'Occupied' : 'Available'
+        };
+      }) : [];
 
       const customers = customersRes.ok ? await customersRes.json() : [];
       const categories = categoriesRes.ok ? await categoriesRes.json() : [];
 
       const billsRaw = billsRes.ok ? await billsRes.json() : [];
-      const bills = Array.isArray(billsRaw) ? billsRaw.map(b => ({
-        ...b,
-        total: b.amount_paid || b.total || 0,
-        status: b.status || 'Paid',
-        date: b.created_at || b.date,
-        orderType: b.orderType || 'Dine In'
-      })) : [];
+      const bills = Array.isArray(billsRaw) ? billsRaw.map(b => {
+        const amount = Number(b.amount_paid || b.totalAmount || b.total || 0);
+        return {
+          ...b,
+          total: amount,
+          amount_paid: amount,
+          totalAmount: amount,
+          status: b.status || 'Paid',
+          createdDate: b.created_at || b.createdDate || b.date,
+          date: b.created_at || b.createdDate || b.date,
+          orderType: b.orderType || 'Dine In'
+        };
+      }) : [];
 
       const dailyExpensesRaw = expRes.ok ? await expRes.json() : [];
       const dailyExpenses = Array.isArray(dailyExpensesRaw) ? dailyExpensesRaw : [];
@@ -305,6 +381,7 @@ export const useDbStore = create((set, get) => ({
       if (billData.orderType === 'Dine In' && billData.tableId) {
           updatedTables = state.tables.map(t => t.id === billData.tableId ? { ...t, status: 'Available' } : t);
           delete updatedOrders[billData.tableId];
+          saveActiveOrdersToStorage(updatedOrders);
           
           fetchWithAuth(`${API_URL}/api/tables/${billData.tableId}/`, {
              method: 'PATCH',
@@ -340,8 +417,11 @@ export const useDbStore = create((set, get) => ({
         body: JSON.stringify({status: 'occupied'})
     }).catch(console.error);
 
+    const updatedOrders = { ...state.activeOrders, [tableId]: cartItems };
+    saveActiveOrdersToStorage(updatedOrders);
+
     return {
-      activeOrders: { ...state.activeOrders, [tableId]: cartItems },
+      activeOrders: updatedOrders,
       tables: state.tables.map(t => t.id === tableId ? { ...t, status: 'Occupied' } : t),
       auditLogs: [...state.auditLogs, log]
     };
@@ -350,6 +430,7 @@ export const useDbStore = create((set, get) => ({
   clearTableOrder: (tableId) => set((state) => {
     const newOrders = { ...state.activeOrders };
     delete newOrders[tableId];
+    saveActiveOrdersToStorage(newOrders);
     
     fetchWithAuth(`${API_URL}/api/tables/${tableId}/`, {
         method: 'PATCH',

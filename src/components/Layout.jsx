@@ -15,7 +15,8 @@ import {
   User,
   LayoutGrid,
   Wallet,
-  Calendar
+  Calendar,
+  UtensilsCrossed
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 
@@ -92,8 +93,9 @@ const Layout = () => {
         </div>
         
         <nav className="flex-1 d-flex flex-col gap-4 overflow-hidden py-24 overflow-y-auto">
-          <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" onClick={handleLinkClick} />
-          <SidebarItem to="/billing" icon={Receipt} label="Add Bill (POS)" onClick={handleLinkClick} />
+          <SidebarItem to="/" icon={Receipt} label="POS / Take Order" onClick={handleLinkClick} />
+          <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={handleLinkClick} />
+          <SidebarItem to="/order" icon={UtensilsCrossed} label="KOT View" onClick={handleLinkClick} />
           <SidebarItem to="/tables" icon={LayoutGrid} label="Tables" onClick={handleLinkClick} />
           <SidebarItem to="/bills" icon={Receipt} label="Bill History" onClick={handleLinkClick} />
           <SidebarItem to="/finance" icon={BarChart3} label="Income/Expenses" onClick={handleLinkClick} />

@@ -39,7 +39,8 @@ function App() {
           <Layout />
         </ProtectedRoute>
       }>
-        <Route index element={<Dashboard />} />
+        <Route index element={<Billing />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="order" element={<Order />} />
         <Route path="billing" element={<Billing />} />
         <Route path="bills" element={<BillList />} />

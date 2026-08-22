@@ -124,16 +124,16 @@ const Order = () => {
              <h3 className="m-0">
                {isSelectingTable ? 'Dine In Tables' : `Menu Items (${selectedCategory})`}
              </h3>
-             <div className="pos-rel">
+             <div className="pos-rel d-flex align-center mobile-w-100">
+               <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
                <input 
                  type="text" 
-                 placeholder={isSelectingTable ? "Search table (e.g. Table 1, Available)..." : "Search item..."} 
-                 className="form-input search-input" 
-                 style={{ width: '280px' }} 
+                 placeholder={isSelectingTable ? "Search table..." : "Search item..."} 
+                 className="form-input search-input mobile-w-100" 
+                 style={{ paddingLeft: '40px', maxWidth: '280px', width: '100%' }} 
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                />
-               <Search size={18} className="search-icon-pos text-muted" />
              </div>
            </div>
         </div>
@@ -149,66 +149,64 @@ const Order = () => {
               ) : (
                 <div className="grid-cols-auto-fill gap-20">
                   {filteredTables.map(table => {
-                    const isAvailable = table.status === 'Available';
-                  const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
-                  const bgColor = isAvailable ? 'var(--bg-tertiary)' : 'rgba(239, 68, 68, 0.05)';
-                  
-                  return (
-                    <div 
-                      key={table.id}
-                      onClick={() => {
-                        setSelectedTable(table.id);
-                        if(isAvailable) updateTableStatus(table.id, 'Occupied');
-                      }}
-                      className="d-flex flex-col radius-md overflow-hidden pos-rel shadow-sm transition-all cursor-pointer"
-                      style={{
-                        backgroundColor: bgColor,
-                        border: `2px solid ${isAvailable ? 'var(--border-color)' : statusColor}`,
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.2)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; }}
-                    >
-                      {/* Top icon area */}
+                    const hasKot = Boolean(activeOrders[table.id] && activeOrders[table.id].length > 0);
+                    const isAvailable = !hasKot;
+                    const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
+                    const bgColor = isAvailable ? 'var(--bg-tertiary)' : 'rgba(239, 68, 68, 0.05)';
+                    
+                    return (
                       <div 
-                        className="d-flex align-center justify-center pos-rel"
-                        style={{ 
-                          height: '110px', 
-                          backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                          color: statusColor
+                        key={table.id}
+                        onClick={() => setSelectedTable(table.id)}
+                        className="d-flex flex-col radius-md overflow-hidden pos-rel shadow-sm transition-all cursor-pointer"
+                        style={{
+                          backgroundColor: bgColor,
+                          border: `2px solid ${isAvailable ? 'var(--border-color)' : statusColor}`,
                         }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.2)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; }}
                       >
-                        {/* Table Vector Graphic */}
-                        <svg viewBox="0 0 100 100" width="70" height="70">
-                          <rect x="30" y="8" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="30" y="80" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="8" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="80" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="24" y="24" width="52" height="52" rx="12" fill="currentColor" />
-                        </svg>
-
+                        {/* Top icon area */}
                         <div 
-                          className="pos-abs w-100 text-center text-white fw-700 px-8"
+                          className="d-flex align-center justify-center pos-rel"
                           style={{ 
-                            fontSize: '1.1rem', 
-                            textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                            height: '110px', 
+                            backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                            color: statusColor
                           }}
                         >
-                          {table.name || `Table ${table.number}`}
-                        </div>
+                          {/* Table Vector Graphic */}
+                          <svg viewBox="0 0 100 100" width="70" height="70">
+                            <rect x="30" y="8" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="30" y="80" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="8" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="80" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="24" y="24" width="52" height="52" rx="12" fill="currentColor" />
+                          </svg>
 
-                        <div 
-                          className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
-                          style={{
-                            top: '10px',
-                            right: '10px',
-                            backgroundColor: statusColor,
-                            fontSize: '0.75rem',
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                          {table.status}
+                          <div 
+                            className="pos-abs w-100 text-center text-white fw-700 px-8"
+                            style={{ 
+                              fontSize: '1.1rem', 
+                              textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                            }}
+                          >
+                            {table.name || `Table ${table.number}`}
+                          </div>
+
+                          <div 
+                            className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
+                            style={{
+                              top: '10px',
+                              right: '10px',
+                              backgroundColor: statusColor,
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px'
+                            }}
+                          >
+                            {isAvailable ? 'Available' : 'Occupied'}
+                          </div>
                         </div>
-                      </div>
 
                       {/* Details area */}
                       <div className="p-16 flex-1 d-flex flex-col gap-12">

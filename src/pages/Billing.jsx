@@ -13,6 +13,8 @@ const Billing = () => {
   const tables = useDbStore(state => state.tables);
   const inventory = useDbStore(state => state.inventory);
   const updateTableStatus = useDbStore(state => state.updateTableStatus);
+  const clearTableOrder = useDbStore(state => state.clearTableOrder);
+  const saveTableOrder = useDbStore(state => state.saveTableOrder);
   const addBill = useDbStore(state => state.addBill);
   const activeOrders = useDbStore(state => state.activeOrders);
 
@@ -30,8 +32,6 @@ const Billing = () => {
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-
-
 
   React.useEffect(() => {
     if (orderType === 'Dine In' && selectedTable && activeOrders[selectedTable]) {
@@ -84,6 +84,28 @@ const Billing = () => {
     return item ? item.qty : 0;
   };
 
+  const handleSaveKOT = () => {
+    if (cart.length === 0) {
+      Swal.fire('Empty Order', 'Please add items to the order first.', 'warning');
+      return;
+    }
+    if (orderType === 'Dine In' && !selectedTable) {
+      Swal.fire('Table Required', 'Please select a table to save KOT.', 'warning');
+      return;
+    }
+
+    saveTableOrder(selectedTable, cart, currentUser);
+    
+    Swal.fire({
+      title: 'KOT Saved!',
+      text: 'Order saved and sent to kitchen.',
+      icon: 'success',
+      timer: 3000,
+      timerProgressBar: true,
+      showConfirmButton: true
+    });
+  };
+
   const handleGenerateBill = () => {
     if (cart.length === 0) {
       Swal.fire('Empty Cart', 'Please add items to the cart first.', 'warning');
@@ -101,8 +123,7 @@ const Billing = () => {
       items: cart,
       totalAmount: cartTotal,
       paymentMethod,
-      // If payment is UPI, we can log it explicitly
-      paymentDetails: paymentMethod === 'UPI' ? 'UPI Payment Logged' : 'Standard Payment'
+      paymentDetails: `${paymentMethod} Payment Logged`
     };
 
     addBill(billData, currentUser);
@@ -115,14 +136,14 @@ const Billing = () => {
       title: 'Success!',
       text: 'Bill generated successfully!',
       icon: 'success',
-      timer: 5000,
+      timer: 4000,
       timerProgressBar: true,
       showConfirmButton: true
     });
   };
 
   return (
-    <div className="billing-layout">
+    <div className="billing-layout pos-rel">
       
       {/* 1. Categories Sidebar */}
       {!isSelectingTable && (
@@ -145,9 +166,9 @@ const Billing = () => {
       {/* 2. Product Grid (Middle) */}
       <div className="glass-panel billing-grid">
         <div className="p-16 border-bottom d-flex flex-col gap-16">
-           {/* Petpooja style order type tabs */}
+           {/* Order type tabs */}
            <div className="d-flex gap-8">
-             {['Dine In', 'Parcel', 'Swiggy'].map(type => (
+             {['Dine In', 'Parcel', 'Online'].map(type => (
                <button 
                  key={type}
                  onClick={() => {
@@ -166,16 +187,16 @@ const Billing = () => {
              <h3 className="m-0">
                {isSelectingTable ? 'Dine In Tables' : `Menu Items (${selectedCategory})`}
              </h3>
-             <div className="pos-rel">
+             <div className="pos-rel d-flex align-center mobile-w-100">
+               <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
                <input 
                  type="text" 
-                 placeholder={isSelectingTable ? "Search table (e.g. Table 1, Available)..." : "Search item..."} 
-                 className="form-input search-input" 
-                 style={{ width: '280px' }} 
+                 placeholder={isSelectingTable ? "Search table..." : "Search item..."} 
+                 className="form-input search-input mobile-w-100" 
+                 style={{ paddingLeft: '40px', maxWidth: '280px', width: '100%' }} 
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                />
-               <Search size={18} className="search-icon-pos text-muted" />
              </div>
            </div>
         </div>
@@ -191,112 +212,108 @@ const Billing = () => {
               ) : (
                 <div className="grid-cols-auto-fill gap-20">
                   {filteredTables.map(table => {
-                    const isAvailable = table.status === 'Available';
-                  const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
-                  const bgColor = isAvailable ? 'var(--bg-tertiary)' : 'rgba(239, 68, 68, 0.05)';
-                  
-                  return (
-                    <div 
-                      key={table.id}
-                      onClick={() => {
-                        setSelectedTable(table.id);
-                        if(isAvailable) updateTableStatus(table.id, 'Occupied');
-                      }}
-                      className="d-flex flex-col radius-md overflow-hidden pos-rel shadow-sm transition-all cursor-pointer"
-                      style={{
-                        backgroundColor: bgColor,
-                        border: `2px solid ${isAvailable ? 'var(--border-color)' : statusColor}`,
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.2)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; }}
-                    >
-                      {/* Top icon area */}
+                    const hasKot = Boolean(activeOrders[table.id] && activeOrders[table.id].length > 0);
+                    const isAvailable = !hasKot;
+                    const statusColor = isAvailable ? '#10b981' : '#ef4444'; // Green for available, Red for occupied
+                    const bgColor = isAvailable ? 'var(--bg-tertiary)' : 'rgba(239, 68, 68, 0.05)';
+                    
+                    return (
                       <div 
-                        className="d-flex align-center justify-center pos-rel"
-                        style={{ 
-                          height: '110px', 
-                          backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                          color: statusColor
+                        key={table.id}
+                        onClick={() => setSelectedTable(table.id)}
+                        className="d-flex flex-col radius-md overflow-hidden pos-rel shadow-sm transition-all cursor-pointer"
+                        style={{
+                          backgroundColor: bgColor,
+                          border: `2px solid ${isAvailable ? 'var(--border-color)' : statusColor}`,
                         }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 15px rgba(0,0,0,0.2)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)'; }}
                       >
-                        {/* Table Vector Graphic */}
-                        <svg viewBox="0 0 100 100" width="70" height="70">
-                          {/* Chairs */}
-                          <rect x="30" y="8" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="30" y="80" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="8" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
-                          <rect x="80" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
-                          {/* Table Body */}
-                          <rect x="24" y="24" width="52" height="52" rx="12" fill="currentColor" />
-                        </svg>
-
+                        {/* Top icon area */}
                         <div 
-                          className="pos-abs w-100 text-center text-white fw-700 px-8"
+                          className="d-flex align-center justify-center pos-rel"
                           style={{ 
-                            fontSize: '1.1rem', 
-                            textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                            height: '110px', 
+                            backgroundColor: isAvailable ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                            color: statusColor
                           }}
                         >
-                          {table.name || `Table ${table.number}`}
+                          {/* Table Vector Graphic */}
+                          <svg viewBox="0 0 100 100" width="70" height="70">
+                            <rect x="30" y="8" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="30" y="80" width="40" height="12" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="8" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="80" y="30" width="12" height="40" rx="6" fill="currentColor" opacity="0.4"/>
+                            <rect x="24" y="24" width="52" height="52" rx="12" fill="currentColor" />
+                          </svg>
+
+                          <div 
+                            className="pos-abs w-100 text-center text-white fw-700 px-8"
+                            style={{ 
+                              fontSize: '1.1rem', 
+                              textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                            }}
+                          >
+                            {table.name || `Table ${table.number}`}
+                          </div>
+
+                          <div 
+                            className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
+                            style={{
+                              top: '10px',
+                              right: '10px',
+                              backgroundColor: statusColor,
+                              fontSize: '0.75rem',
+                              letterSpacing: '0.5px'
+                            }}
+                          >
+                            {isAvailable ? 'Available' : 'Occupied'}
+                          </div>
                         </div>
 
-                        <div 
-                          className="pos-abs text-white px-12 py-4 radius-sm fw-700 text-uppercase"
-                          style={{
-                            top: '10px',
-                            right: '10px',
-                            backgroundColor: statusColor,
-                            fontSize: '0.75rem',
-                            letterSpacing: '0.5px'
-                          }}
-                        >
-                          {table.status}
+                        {/* Details area */}
+                        <div className="p-16 flex-1 d-flex flex-col gap-12">
+                          <div className="d-flex justify-between align-center">
+                            <div className="d-flex align-center gap-6 text-muted">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                              <span className="fs-sm fw-600">{table.capacity} Pax</span>
+                            </div>
+                            
+                            <div className="d-flex align-center gap-4 text-muted">
+                              <UtensilsCrossed size={14} />
+                              <span style={{ fontSize: '0.85rem' }}>Dine In</span>
+                            </div>
+                          </div>
+
+                          {!isAvailable && (
+                            <div className="mt-auto pt-12 d-flex justify-between align-center" style={{ borderTop: '1px dashed var(--border-color)' }}>
+                              <div className="text-danger fw-600" style={{ fontSize: '0.8rem' }}>In Use</div>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  clearTableOrder(table.id);
+                                }}
+                                className="bg-transparent border-none text-main px-12 py-6 radius-sm cursor-pointer transition-all"
+                                style={{ 
+                                  border: '1px solid var(--border-color)',
+                                  fontSize: '0.8rem'
+                                }}
+                                onMouseOver={(e) => e.target.style.background = 'var(--bg-tertiary)'}
+                                onMouseOut={(e) => e.target.style.background = 'transparent'}
+                              >
+                                Clear Table
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
-
-                      {/* Details area */}
-                      <div className="p-16 flex-1 d-flex flex-col gap-12">
-                        <div className="d-flex justify-between align-center">
-                          <div className="d-flex align-center gap-6 text-muted">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                            <span className="fs-sm fw-600">{table.capacity} Pax</span>
-                          </div>
-                          
-                          <div className="d-flex align-center gap-4 text-muted">
-                            <UtensilsCrossed size={14} />
-                            <span style={{ fontSize: '0.85rem' }}>Dine In</span>
-                          </div>
-                        </div>
-
-                        {!isAvailable && (
-                          <div className="mt-auto pt-12 d-flex justify-between align-center" style={{ borderTop: '1px dashed var(--border-color)' }}>
-                            <div className="text-danger fw-600" style={{ fontSize: '0.8rem' }}>In Use</div>
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                updateTableStatus(table.id, 'Available');
-                              }}
-                              className="bg-transparent border-none text-main px-12 py-6 radius-sm cursor-pointer transition-all"
-                              style={{ 
-                                border: '1px solid var(--border-color)',
-                                fontSize: '0.8rem'
-                              }}
-                              onMouseOver={(e) => e.target.style.background = 'var(--bg-tertiary)'}
-                              onMouseOut={(e) => e.target.style.background = 'transparent'}
-                            >
-                              Clear Table
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           ) : (
-            <div className="grid-cols-auto-fill gap-16">
+            <div className="grid-cols-2 gap-12">
               {filteredInventory.map(item => {
                 const qty = getProductQty(item.id);
                 return (
@@ -395,8 +412,8 @@ const Billing = () => {
         </div>
       </div>
 
-      {/* 3. Cart Pane (Right) */}
-      <div className="glass-panel billing-cart">
+      {/* 3. Cart / Bill Pane (Right) */}
+      <div id="cart-pane" className="glass-panel billing-cart">
         
         {/* Order Info */}
         <div className="p-16 border-bottom">
@@ -423,7 +440,7 @@ const Billing = () => {
               <div key={index} className="d-flex justify-between align-center py-12 border-bottom">
                 <div className="flex-1">
                   <div className="fw-500 fs-sm">{item.itemName}</div>
-                  <div className="fs-sm text-muted">₹{item.price} x {item.qty}</div>
+                  <div className="fs-sm text-muted">₹{item.price} × {item.qty}</div>
                 </div>
                 <div className="fw-600 mr-12">₹{item.price * item.qty}</div>
                 <button 
@@ -433,7 +450,6 @@ const Billing = () => {
                 >
                   <Trash2 size={16} />
                 </button>
-
               </div>
             ))
           )}
@@ -446,34 +462,57 @@ const Billing = () => {
             <span className="text-primary">₹{cartTotal}</span>
           </div>
           
-          <div className="grid-cols-2 gap-8 mb-16">
-            {['Cash', 'UPI'].map(method => (
-              <button 
-                key={method}
-                onClick={() => setPaymentMethod(method)}
-                className="py-12 radius-sm cursor-pointer fw-600 transition-all border-solid"
-                style={{ 
-                  backgroundColor: paymentMethod === method ? 'var(--primary-color)' : 'transparent',
-                  borderColor: paymentMethod === method ? 'var(--primary-color)' : 'var(--border-color)',
-                  color: paymentMethod === method ? 'white' : 'var(--text-muted)'
-                }}
-              >
-                {method}
-              </button>
-            ))}
+          {/* Compact Payment Method Segmented Control */}
+          <div className="d-flex gap-4 mb-12 p-2 radius-md" style={{ background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)' }}>
+            {[
+              { id: 'Cash', label: 'Cash' },
+              { id: 'UPI', label: 'UPI' },
+              { id: 'Credit', label: 'Credit' }
+            ].map(m => {
+              const isSelected = paymentMethod === m.id;
+              return (
+                <button 
+                  key={m.id}
+                  type="button"
+                  onClick={() => setPaymentMethod(m.id)}
+                  className="flex-1 d-flex align-center justify-center py-6 px-8 radius-sm fw-600 transition-all border-none cursor-pointer"
+                  style={{ 
+                    backgroundColor: isSelected ? 'var(--primary-color)' : 'transparent',
+                    color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                    boxShadow: isSelected ? '0 2px 6px rgba(226, 55, 68, 0.35)' : 'none',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  {m.label}
+                </button>
+              );
+            })}
           </div>
 
-          <button 
-            onClick={handleGenerateBill} 
-            className="btn btn-primary w-100 p-16 fs-lg radius-md" 
-            style={{ opacity: (cart.length === 0 || (orderType === 'Dine In' && !selectedTable)) ? 0.5 : 1 }}
-            disabled={cart.length === 0 || (orderType === 'Dine In' && !selectedTable)}
-          >
-            Generate Bill
-          </button>
+          <div className="d-flex gap-8">
+            {orderType === 'Dine In' && (
+              <button 
+                onClick={handleSaveKOT} 
+                className="btn btn-secondary flex-1 p-14 fs-md radius-md fw-600" 
+                style={{ opacity: (cart.length === 0 || !selectedTable) ? 0.5 : 1 }}
+                disabled={cart.length === 0 || !selectedTable}
+              >
+                Save KOT
+              </button>
+            )}
+            <button 
+              onClick={handleGenerateBill} 
+              className="btn btn-primary flex-1 p-14 fs-md radius-md fw-600" 
+              style={{ opacity: (cart.length === 0 || (orderType === 'Dine In' && !selectedTable)) ? 0.5 : 1 }}
+              disabled={cart.length === 0 || (orderType === 'Dine In' && !selectedTable)}
+            >
+              Generate Bill
+            </button>
+          </div>
         </div>
 
       </div>
+
     </div>
   );
 };
