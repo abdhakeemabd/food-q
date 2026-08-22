@@ -81,7 +81,7 @@ const Login = () => {
           <div className="d-flex justify-center mb-16 pos-rel">
             <img 
               src={logoImg} 
-              alt="Food-Q Logo" 
+              alt="AREA 51 Logo" 
               style={{
                 width: '76px',
                 height: '76px',
@@ -93,7 +93,7 @@ const Login = () => {
             />
           </div>
           <h2 className="m-0 fs-2xl fw-700 tracking-tight" style={{ color: '#ffffff' }}>
-            Food-Q <span style={{ color: '#e23744' }}>POS</span>
+            AREA 51 <span style={{ color: '#e23744' }}>POS</span>
           </h2>
           <p className="m-0 mt-6 fs-sm" style={{ color: '#94a3b8' }}>
             Restaurant & Billing Management System

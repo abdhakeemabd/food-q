@@ -13,9 +13,9 @@ export default defineConfig({
         enabled: false
       },
       manifest: {
-        name: 'Food-Q POS & Management',
-        short_name: 'Food-Q',
-        description: 'Professional Food-Q restaurant POS and management system',
+        name: 'AREA 51 POS & Management',
+        short_name: 'AREA 51',
+        description: 'Professional AREA 51 restaurant POS and management system',
         theme_color: '#070a12',
         background_color: '#070a12',
         display: 'standalone',

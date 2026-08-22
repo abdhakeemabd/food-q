@@ -38,7 +38,7 @@ const Dashboard = () => {
     <div>
       <div className="mb-32">
         <h2 className="page-title">Dashboard Overview</h2>
-        <p className="text-muted m-0">Welcome back! Here is what's happening at Food-Q today.</p>
+        <p className="text-muted m-0">Welcome back! Here is what's happening at AREA 51 today.</p>
       </div>
 
       <div className="mb-32 grid-cols-auto-fit gap-24">

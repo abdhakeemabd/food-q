@@ -61,7 +61,7 @@ const Layout = () => {
   const handleLogout = () => {
     Swal.fire({
       title: 'Ready to leave?',
-      text: "You are about to log out of Food-Q.",
+      text: "You are about to log out of AREA 51.",
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: 'var(--primary-color)',
@@ -89,7 +89,7 @@ const Layout = () => {
             <div className="d-flex align-center justify-center overflow-hidden radius-sm mr-12" style={{ width: '40px', height: '40px' }}>
               <img src={logoImg} alt="Logo" className="w-100 h-100 radius-sm object-cover" />
             </div>
-          <h2 className="m-0 text-primary fw-700" style={{ fontSize: '1.3rem' }}>Food-Q</h2>
+          <h2 className="m-0 text-primary fw-700" style={{ fontSize: '1.3rem', letterSpacing: '0.5px' }}>AREA 51</h2>
         </div>
         
         <nav className="flex-1 d-flex flex-col gap-4 overflow-hidden py-24 overflow-y-auto">

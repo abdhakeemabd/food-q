@@ -135,7 +135,7 @@ const BillList = () => {
             {/* Header */}
             <div className="d-flex justify-between align-center mb-16 pb-16" style={{ borderBottom: '1px dashed var(--border-color)' }}>
               <div>
-                <h3 className="m-0 mb-4">Food-Q Receipt</h3>
+                <h3 className="m-0 mb-4">AREA 51 Receipt</h3>
                 <div className="fs-sm text-muted">Date: {new Date(selectedBill.createdDate).toLocaleString()}</div>
                 <div className="fs-sm text-muted">Order: {selectedBill.orderType} {selectedBill.tableId ? `- Table ${selectedBill.tableId}` : ''}</div>
               </div>
