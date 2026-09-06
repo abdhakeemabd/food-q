@@ -133,7 +133,7 @@ export const useDbStore = create((set, get) => ({
         itemName: i.name || i.itemName || '',
         quantity: i.stock !== undefined ? i.stock : (i.quantity || 0),
         status: i.is_available !== false ? 'Active' : 'Archived',
-        img: i.img || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80',
+        img: i.img || '',
       })) : [];
 
       const activeOrdersMap = get().activeOrders || {};

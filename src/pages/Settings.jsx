@@ -213,6 +213,46 @@ const Settings = () => {
     }
   };
 
+  const handleEditRole = async (roleItem) => {
+    const { value: updatedName } = await Swal.fire({
+      title: 'Edit Role',
+      input: 'text',
+      inputLabel: 'New Role Name',
+      inputValue: roleItem.name,
+      showCancelButton: true,
+      confirmButtonText: 'Update',
+      confirmButtonColor: '#e23744',
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return 'Role name cannot be empty!';
+        }
+      }
+    });
+
+    if (updatedName && updatedName.trim().toLowerCase() !== roleItem.name.toLowerCase()) {
+      const trimmedNew = updatedName.trim();
+
+      const matchingRoles = dbRoles.filter(r => (typeof r === 'string' ? r : r.name).toLowerCase() === roleItem.name.toLowerCase());
+
+      if (matchingRoles.length > 0) {
+        for (const r of matchingRoles) {
+          if (r.id) {
+            await updateRecord('roles', r.id, { name: trimmedNew }, currentUser);
+          }
+        }
+      } else {
+        await addRecord('roles', { name: trimmedNew }, currentUser);
+      }
+
+      const matchingEmployees = employees.filter(e => String(e.role).toLowerCase() === roleItem.name.toLowerCase());
+      for (const emp of matchingEmployees) {
+        await updateRecord('employees', emp.id, { role: trimmedNew }, currentUser);
+      }
+
+      Swal.fire({ title: 'Updated!', text: `Role changed to "${trimmedNew}".`, icon: 'success', timer: 5000, timerProgressBar: true });
+    }
+  };
+
   const handleDeleteRole = (roleItem) => {
     const count = employees.filter(e => String(e.role).toLowerCase() === roleItem.name.toLowerCase()).length;
     Swal.fire({
@@ -406,13 +446,22 @@ const Settings = () => {
                             </span>
                           </td>
                           <td>
-                            <button
-                              onClick={() => handleDeleteRole(r)}
-                              className="btn btn-secondary p-8 text-danger border-danger"
-                              title="Delete Role"
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            <div className="d-flex gap-8">
+                              <button
+                                onClick={() => handleEditRole(r)}
+                                className="btn btn-secondary p-8"
+                                title="Edit Role"
+                              >
+                                <Edit2 size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteRole(r)}
+                                className="btn btn-secondary p-8 text-danger border-danger"
+                                title="Delete Role"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
