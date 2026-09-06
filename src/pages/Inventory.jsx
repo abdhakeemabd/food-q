@@ -4,6 +4,87 @@ import { useAuth } from '../store/AuthContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed, GripVertical } from 'lucide-react';
 import Swal from 'sweetalert2';
 
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+const SortableRow = ({ item, index, openEditModal, handleDelete }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    backgroundColor: isDragging ? 'var(--bg-tertiary)' : 'transparent',
+    cursor: 'grab',
+    position: 'relative',
+    zIndex: isDragging ? 100 : 1,
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <td className="text-muted fw-600">
+        <div className="d-flex align-center gap-8">
+          <div style={{ display: 'flex', alignItems: 'center', opacity: 0.5 }}>
+            <GripVertical size={16} />
+          </div>
+          {index + 1}
+        </div>
+      </td>
+      <td>
+        {item.img ? (
+          <div className="radius-sm" style={{ width: '40px', height: '40px', backgroundImage: `url(${item.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        ) : (
+          <div className="radius-sm bg-tertiary d-flex align-center justify-center text-muted" style={{ width: '40px', height: '40px' }}>
+            <UtensilsCrossed size={20} />
+          </div>
+        )}
+      </td>
+      <td className="fw-600">{item.itemName || item.name || 'Unnamed Item'}</td>
+      <td>{item.category}</td>
+      <td className="text-primary fw-600">₹{item.price}</td>
+      <td>
+        <span style={{ color: item.quantity <= 10 ? '#e23744' : 'inherit', fontWeight: item.quantity <= 10 ? 700 : 400 }}>
+          {item.quantity} units
+        </span>
+      </td>
+      <td>
+        <span className="badge badge-active">Active</span>
+      </td>
+      <td onPointerDown={(e) => e.stopPropagation()}>
+        <div className="d-flex gap-8">
+          <button onClick={() => openEditModal(item)} className="btn btn-secondary p-4">
+            <Edit2 size={16} />
+          </button>
+          <button onClick={() => handleDelete(item.id)} className="btn btn-secondary p-4 text-danger border-danger">
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
 const Inventory = () => {
   const { currentUser } = useAuth();
   const inventory = useDbStore(state => state.inventory);
@@ -14,9 +95,6 @@ const Inventory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
-  const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
 
   const [formData, setFormData] = useState({
     itemName: '',
@@ -34,10 +112,19 @@ const Inventory = () => {
   ]));
   const categories = categoriesList.length > 0 ? categoriesList : ['Main Course'];
 
-  const filteredInventory = inventory.filter(i => {
-    const name = i?.itemName || i?.name || '';
-    return i?.status !== 'Archived' && name.toLowerCase().includes((searchQuery || '').toLowerCase());
-  });
+  // Keep an internal state for optimistic UI updates during drag
+  const [items, setItems] = useState([]);
+
+  // Sync internal state with Zustand store, applying search filter
+  React.useEffect(() => {
+    const filtered = inventory.filter(i => {
+      const name = i?.itemName || i?.name || '';
+      return i?.status !== 'Archived' && name.toLowerCase().includes((searchQuery || '').toLowerCase());
+    });
+    // Sort by display_order to be safe
+    filtered.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+    setItems(filtered);
+  }, [inventory, searchQuery]);
 
   const openAddModal = () => {
     setEditItem(null);
@@ -96,30 +183,36 @@ const Inventory = () => {
     });
   };
 
-  const handleDragStart = (index) => {
-    setDraggedItemIndex(index);
-  };
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  const handleDragEnter = (index) => {
-    setDragOverItemIndex(index);
-  };
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
 
-  const handleDragEnd = () => {
-    if (draggedItemIndex !== null && dragOverItemIndex !== null && draggedItemIndex !== dragOverItemIndex) {
-      const items = [...filteredInventory];
-      const draggedItem = items[draggedItemIndex];
+    if (active.id !== over.id) {
+      const oldIndex = items.findIndex((item) => item.id === active.id);
+      const newIndex = items.findIndex((item) => item.id === over.id);
       
-      items.splice(draggedItemIndex, 1);
-      items.splice(dragOverItemIndex, 0, draggedItem);
+      const newItems = arrayMove(items, oldIndex, newIndex);
       
-      items.forEach((item, index) => {
+      // Update local state immediately for snappy UI
+      setItems(newItems);
+      
+      // Update backend sequentially to avoid race conditions
+      newItems.forEach((item, index) => {
         if (item.display_order !== index) {
           updateRecord('inventory', item.id, { display_order: index }, currentUser);
         }
       });
     }
-    setDraggedItemIndex(null);
-    setDragOverItemIndex(null);
   };
 
   return (
@@ -167,66 +260,33 @@ const Inventory = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredInventory.length === 0 ? (
+            {items.length === 0 ? (
               <tr>
                 <td colSpan="8" className="text-center p-32 text-muted">
                   No items found matching your search. Add some to get started.
                 </td>
               </tr>
             ) : (
-              filteredInventory.map((item, index) => (
-                <tr 
-                  key={item.id}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragEnter={() => handleDragEnter(index)}
-                  onDragEnd={handleDragEnd}
-                  onDragOver={(e) => e.preventDefault()}
-                  style={{ 
-                    backgroundColor: dragOverItemIndex === index ? 'var(--bg-tertiary)' : 'transparent',
-                    opacity: draggedItemIndex === index ? 0.5 : 1,
-                  }}
+              <DndContext 
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext 
+                  items={items.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <td className="text-muted fw-600">
-                    <div className="d-flex align-center gap-8">
-                      <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center', opacity: 0.5 }}>
-                        <GripVertical size={16} />
-                      </div>
-                      {index + 1}
-                    </div>
-                  </td>
-                  <td>
-                    {item.img ? (
-                      <div className="radius-sm" style={{ width: '40px', height: '40px', backgroundImage: `url(${item.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                    ) : (
-                      <div className="radius-sm bg-tertiary d-flex align-center justify-center text-muted" style={{ width: '40px', height: '40px' }}>
-                        <UtensilsCrossed size={20} />
-                      </div>
-                    )}
-                  </td>
-                  <td className="fw-600">{item.itemName || item.name || 'Unnamed Item'}</td>
-                  <td>{item.category}</td>
-                  <td className="text-primary fw-600">₹{item.price}</td>
-                  <td>
-                    <span style={{ color: item.quantity <= 10 ? '#e23744' : 'inherit', fontWeight: item.quantity <= 10 ? 700 : 400 }}>
-                      {item.quantity} units
-                    </span>
-                  </td>
-                  <td>
-                    <span className="badge badge-active">Active</span>
-                  </td>
-                  <td>
-                    <div className="d-flex gap-8">
-                      <button onClick={() => openEditModal(item)} className="btn btn-secondary p-4">
-                        <Edit2 size={16} />
-                      </button>
-                      <button onClick={() => handleDelete(item.id)} className="btn btn-secondary p-4 text-danger border-danger">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+                  {items.map((item, index) => (
+                    <SortableRow 
+                      key={item.id} 
+                      item={item} 
+                      index={index}
+                      openEditModal={openEditModal}
+                      handleDelete={handleDelete}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </tbody>
         </table>
