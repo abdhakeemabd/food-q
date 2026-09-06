@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed, GripVertical } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const Inventory = () => {
@@ -14,6 +14,9 @@ const Inventory = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
 
   const [formData, setFormData] = useState({
     itemName: '',
@@ -93,26 +96,30 @@ const Inventory = () => {
     });
   };
 
-  const moveUp = (index) => {
-    if (index === 0) return;
-    const current = filteredInventory[index];
-    const previous = filteredInventory[index - 1];
-    const tempOrder = current.display_order !== undefined ? current.display_order : index;
-    const prevOrder = previous.display_order !== undefined ? previous.display_order : (index - 1);
-    
-    updateRecord('inventory', current.id, { display_order: prevOrder }, currentUser);
-    updateRecord('inventory', previous.id, { display_order: tempOrder }, currentUser);
+  const handleDragStart = (index) => {
+    setDraggedItemIndex(index);
   };
 
-  const moveDown = (index) => {
-    if (index === filteredInventory.length - 1) return;
-    const current = filteredInventory[index];
-    const next = filteredInventory[index + 1];
-    const tempOrder = current.display_order !== undefined ? current.display_order : index;
-    const nextOrder = next.display_order !== undefined ? next.display_order : (index + 1);
+  const handleDragEnter = (index) => {
+    setDragOverItemIndex(index);
+  };
 
-    updateRecord('inventory', current.id, { display_order: nextOrder }, currentUser);
-    updateRecord('inventory', next.id, { display_order: tempOrder }, currentUser);
+  const handleDragEnd = () => {
+    if (draggedItemIndex !== null && dragOverItemIndex !== null && draggedItemIndex !== dragOverItemIndex) {
+      const items = [...filteredInventory];
+      const draggedItem = items[draggedItemIndex];
+      
+      items.splice(draggedItemIndex, 1);
+      items.splice(dragOverItemIndex, 0, draggedItem);
+      
+      items.forEach((item, index) => {
+        if (item.display_order !== index) {
+          updateRecord('inventory', item.id, { display_order: index }, currentUser);
+        }
+      });
+    }
+    setDraggedItemIndex(null);
+    setDragOverItemIndex(null);
   };
 
   return (
@@ -168,8 +175,26 @@ const Inventory = () => {
               </tr>
             ) : (
               filteredInventory.map((item, index) => (
-                <tr key={item.id}>
-                  <td className="text-muted fw-600">{index + 1}</td>
+                <tr 
+                  key={item.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragEnter={() => handleDragEnter(index)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => e.preventDefault()}
+                  style={{ 
+                    backgroundColor: dragOverItemIndex === index ? 'var(--bg-tertiary)' : 'transparent',
+                    opacity: draggedItemIndex === index ? 0.5 : 1,
+                  }}
+                >
+                  <td className="text-muted fw-600">
+                    <div className="d-flex align-center gap-8">
+                      <div style={{ cursor: 'grab', display: 'flex', alignItems: 'center', opacity: 0.5 }}>
+                        <GripVertical size={16} />
+                      </div>
+                      {index + 1}
+                    </div>
+                  </td>
                   <td>
                     {item.img ? (
                       <div className="radius-sm" style={{ width: '40px', height: '40px', backgroundImage: `url(${item.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -192,14 +217,6 @@ const Inventory = () => {
                   </td>
                   <td>
                     <div className="d-flex gap-8">
-                      <div className="d-flex flex-col gap-4 mr-8">
-                        <button onClick={() => moveUp(index)} disabled={index === 0} className="bg-transparent border-none p-0 cursor-pointer text-muted hover-text-primary d-flex align-center justify-center" style={{ opacity: index === 0 ? 0.3 : 1 }}>
-                          <ArrowUp size={16} />
-                        </button>
-                        <button onClick={() => moveDown(index)} disabled={index === filteredInventory.length - 1} className="bg-transparent border-none p-0 cursor-pointer text-muted hover-text-primary d-flex align-center justify-center" style={{ opacity: index === filteredInventory.length - 1 ? 0.3 : 1 }}>
-                          <ArrowDown size={16} />
-                        </button>
-                      </div>
                       <button onClick={() => openEditModal(item)} className="btn btn-secondary p-4">
                         <Edit2 size={16} />
                       </button>
