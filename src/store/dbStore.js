@@ -128,13 +128,14 @@ export const useDbStore = create((set, get) => ({
       ]);
 
       const inventoryRaw = invRes.ok ? await invRes.json() : [];
-      const inventory = Array.isArray(inventoryRaw) ? inventoryRaw.map(i => ({
+      const inventory = Array.isArray(inventoryRaw) ? inventoryRaw.map((i, index) => ({
         ...i,
         itemName: i.name || i.itemName || '',
         quantity: i.stock !== undefined ? i.stock : (i.quantity || 0),
         status: i.is_available !== false ? 'Active' : 'Archived',
         img: i.img || '',
-      })) : [];
+        display_order: i.display_order !== undefined ? i.display_order : index,
+      })).sort((a, b) => a.display_order - b.display_order) : [];
 
       const activeOrdersMap = get().activeOrders || {};
       const tablesRaw = tablesRes.ok ? await tablesRes.json() : [];
@@ -216,6 +217,7 @@ export const useDbStore = create((set, get) => ({
       if (collection === 'inventory') {
         payload.name = data.itemName;
         payload.stock = data.quantity;
+        if (data.display_order !== undefined) payload.display_order = data.display_order;
       }
       try {
         const res = await fetchWithAuth(`${API_URL}/api/${collection}/`, {
@@ -261,6 +263,7 @@ export const useDbStore = create((set, get) => ({
       if (collection === 'inventory') {
         if (data.itemName !== undefined) payload.name = data.itemName;
         if (data.quantity !== undefined) payload.stock = data.quantity;
+        if (data.display_order !== undefined) payload.display_order = data.display_order;
       }
       try {
         await fetchWithAuth(`${API_URL}/api/${collection}/${id}/`, {

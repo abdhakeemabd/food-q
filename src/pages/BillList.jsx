@@ -69,6 +69,7 @@ const BillList = () => {
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
+              <th>S.No.</th>
               <th>Date</th>
               <th>Order Type</th>
               <th>Items</th>
@@ -81,13 +82,14 @@ const BillList = () => {
           <tbody>
             {bills.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center p-32 text-muted">
+                <td colSpan="8" className="text-center p-32 text-muted">
                   No bills generated yet.
                 </td>
               </tr>
             ) : (
-              bills.slice().reverse().map(bill => (
+              bills.slice().reverse().map((bill, index) => (
                 <tr key={bill.id}>
+                  <td className="text-muted fw-600">{index + 1}</td>
                   <td>{new Date(bill.createdDate || Date.now()).toLocaleString()}</td>
                   <td>
                     <div className="fw-500">{bill.orderType || 'Dine In'}</div>

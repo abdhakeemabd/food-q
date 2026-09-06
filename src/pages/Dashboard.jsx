@@ -57,6 +57,7 @@ const Dashboard = () => {
           <table className="data-table" style={{ minWidth: '800px' }}>
             <thead>
               <tr>
+                <th>S.No.</th>
                 <th>Order ID</th>
                 <th>Date & Time</th>
                 <th>Type</th>
@@ -68,13 +69,14 @@ const Dashboard = () => {
             <tbody>
               {recentBills.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center p-32 text-muted">
+                  <td colSpan="7" className="text-center p-32 text-muted">
                     No recent orders today.
                   </td>
                 </tr>
               ) : (
-                recentBills.map(bill => (
+                recentBills.map((bill, index) => (
                   <tr key={bill.id}>
+                    <td className="text-muted fw-600">{index + 1}</td>
                     <td className="fw-600" style={{ fontFamily: 'monospace' }}>#{String(bill?.id || 'BILL').toUpperCase()}</td>
                     <td>{bill?.createdDate ? new Date(bill.createdDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}</td>
                     <td>

@@ -183,6 +183,7 @@ const Reports = () => {
           <table className="data-table" style={{ minWidth: '800px' }}>
             <thead>
               <tr>
+                <th>S.No.</th>
                 <th>Date</th>
                 <th>Category</th>
                 <th>Description</th>
@@ -192,13 +193,14 @@ const Reports = () => {
             <tbody>
               {filteredExpenses.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="text-center p-32 text-muted">
+                  <td colSpan="5" className="text-center p-32 text-muted">
                     No expenses recorded for this period.
                   </td>
                 </tr>
               ) : (
-                filteredExpenses.map(exp => (
+                filteredExpenses.map((exp, index) => (
                   <tr key={exp.id}>
+                    <td className="text-muted fw-600">{index + 1}</td>
                     <td>{new Date(exp.date).toLocaleDateString()}</td>
                     <td>
                       <span className="badge bg-tertiary">{exp.category}</span>

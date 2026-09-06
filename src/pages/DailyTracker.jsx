@@ -135,6 +135,7 @@ const DailyTracker = () => {
             <table className="data-table" style={{ minWidth: '800px' }}>
               <thead>
                 <tr>
+                  <th>S.No.</th>
                   <th>Date</th>
                   <th>Day Total Sale</th>
                   <th>Swiggy</th>
@@ -145,10 +146,11 @@ const DailyTracker = () => {
               </thead>
               <tbody>
                 {dailyTrackers.length === 0 ? (
-                  <tr><td colSpan="6" className="text-center p-32">No Sales Records Found</td></tr>
+                  <tr><td colSpan="7" className="text-center p-32">No Sales Records Found</td></tr>
                 ) : (
-                  dailyTrackers.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
+                  dailyTrackers.sort((a,b) => new Date(b.date) - new Date(a.date)).map((item, index) => (
                     <tr key={item.id}>
+                      <td className="text-muted fw-600">{index + 1}</td>
                       <td className="fw-500">{item.date}</td>
                       <td className="fw-700" style={{ color: '#2a9d8f' }}>₹{item.total_sale}</td>
                       <td className="fw-700" style={{ color: '#fca311' }}>₹{item.swiggy}</td>
@@ -173,6 +175,7 @@ const DailyTracker = () => {
             <table className="data-table" style={{ minWidth: '1200px' }}>
               <thead>
                 <tr>
+                  <th>S.No.</th>
                   <th>Date</th>
                   <th>Chicken</th>
                   <th>Mutton</th>
@@ -191,10 +194,11 @@ const DailyTracker = () => {
               </thead>
               <tbody>
                 {dailyExpenses.length === 0 ? (
-                  <tr><td colSpan="14" className="text-center p-32">No Expense Records Found</td></tr>
+                  <tr><td colSpan="15" className="text-center p-32">No Expense Records Found</td></tr>
                 ) : (
-                  dailyExpenses.sort((a,b) => new Date(b.date) - new Date(a.date)).map(item => (
+                  dailyExpenses.sort((a,b) => new Date(b.date) - new Date(a.date)).map((item, index) => (
                     <tr key={item.id}>
+                      <td className="text-muted fw-600">{index + 1}</td>
                       <td className="fw-500">{item.date}</td>
                       <td>{item.chicken || '-'}</td>
                       <td>{item.mutton || '-'}</td>

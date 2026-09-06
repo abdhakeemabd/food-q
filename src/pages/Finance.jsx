@@ -118,6 +118,7 @@ const Finance = () => {
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
+              <th>S.No.</th>
               <th>Date</th>
               <th>Title</th>
               <th>Category</th>
@@ -129,13 +130,14 @@ const Finance = () => {
           <tbody>
             {activeData.filter(i => i.status !== 'Archived').length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '32px', color: 'var(--text-muted)' }}>
                   No {activeTab} recorded.
                 </td>
               </tr>
             ) : (
-              activeData.filter(i => i.status !== 'Archived').slice().reverse().map(item => (
+              activeData.filter(i => i.status !== 'Archived').slice().reverse().map((item, index) => (
                 <tr key={item.id}>
+                  <td className="text-muted fw-600">{index + 1}</td>
                   <td>{item.date || new Date(item.createdDate).toLocaleDateString()}</td>
                   <td style={{ fontWeight: 500 }}>{item.title}</td>
                   <td><span className="badge" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>{item.category}</span></td>

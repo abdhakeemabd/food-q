@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed, ArrowUp, ArrowDown } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const Inventory = () => {
@@ -93,6 +93,28 @@ const Inventory = () => {
     });
   };
 
+  const moveUp = (index) => {
+    if (index === 0) return;
+    const current = filteredInventory[index];
+    const previous = filteredInventory[index - 1];
+    const tempOrder = current.display_order !== undefined ? current.display_order : index;
+    const prevOrder = previous.display_order !== undefined ? previous.display_order : (index - 1);
+    
+    updateRecord('inventory', current.id, { display_order: prevOrder }, currentUser);
+    updateRecord('inventory', previous.id, { display_order: tempOrder }, currentUser);
+  };
+
+  const moveDown = (index) => {
+    if (index === filteredInventory.length - 1) return;
+    const current = filteredInventory[index];
+    const next = filteredInventory[index + 1];
+    const tempOrder = current.display_order !== undefined ? current.display_order : index;
+    const nextOrder = next.display_order !== undefined ? next.display_order : (index + 1);
+
+    updateRecord('inventory', current.id, { display_order: nextOrder }, currentUser);
+    updateRecord('inventory', next.id, { display_order: tempOrder }, currentUser);
+  };
+
   return (
     <div>
       <div className="d-flex justify-between align-center mb-32 flex-wrap gap-16">
@@ -127,6 +149,7 @@ const Inventory = () => {
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
+              <th>S.No.</th>
               <th>Image</th>
               <th>Item Name</th>
               <th>Category</th>
@@ -139,13 +162,14 @@ const Inventory = () => {
           <tbody>
             {filteredInventory.length === 0 ? (
               <tr>
-                <td colSpan="7" className="text-center p-32 text-muted">
+                <td colSpan="8" className="text-center p-32 text-muted">
                   No items found matching your search. Add some to get started.
                 </td>
               </tr>
             ) : (
-              filteredInventory.map(item => (
+              filteredInventory.map((item, index) => (
                 <tr key={item.id}>
+                  <td className="text-muted fw-600">{index + 1}</td>
                   <td>
                     {item.img ? (
                       <div className="radius-sm" style={{ width: '40px', height: '40px', backgroundImage: `url(${item.img})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -168,6 +192,14 @@ const Inventory = () => {
                   </td>
                   <td>
                     <div className="d-flex gap-8">
+                      <div className="d-flex flex-col gap-4 mr-8">
+                        <button onClick={() => moveUp(index)} disabled={index === 0} className="bg-transparent border-none p-0 cursor-pointer text-muted hover-text-primary d-flex align-center justify-center" style={{ opacity: index === 0 ? 0.3 : 1 }}>
+                          <ArrowUp size={16} />
+                        </button>
+                        <button onClick={() => moveDown(index)} disabled={index === filteredInventory.length - 1} className="bg-transparent border-none p-0 cursor-pointer text-muted hover-text-primary d-flex align-center justify-center" style={{ opacity: index === filteredInventory.length - 1 ? 0.3 : 1 }}>
+                          <ArrowDown size={16} />
+                        </button>
+                      </div>
                       <button onClick={() => openEditModal(item)} className="btn btn-secondary p-4">
                         <Edit2 size={16} />
                       </button>

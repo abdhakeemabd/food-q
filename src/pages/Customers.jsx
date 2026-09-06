@@ -91,6 +91,7 @@ const Customers = () => {
           <table className="data-table" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
+              <th>S.No.</th>
               <th>Name</th>
               <th>Phone</th>
               <th>Address</th>
@@ -102,15 +103,16 @@ const Customers = () => {
           <tbody>
             {activeCustomers.length === 0 ? (
               <tr>
-                <td colSpan="6" className="text-center p-32 text-muted">
+                <td colSpan="7" className="text-center p-32 text-muted">
                   No customers added yet.
                 </td>
               </tr>
             ) : (
-              activeCustomers.map(customer => {
+              activeCustomers.map((customer, index) => {
                 const orderCount = bills.filter(b => b.customerPhone === customer.phone).length;
                 return (
                   <tr key={customer.id}>
+                    <td className="text-muted fw-600">{index + 1}</td>
                     <td>
                       <div className="d-flex align-center gap-12">
                         <div className="radius-full bg-tertiary d-flex align-center justify-center" style={{ width: '36px', height: '36px' }}>

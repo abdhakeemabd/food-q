@@ -223,6 +223,7 @@ const Employees = () => {
             <table className="data-table" style={{ minWidth: '800px' }}>
               <thead>
                 <tr>
+                  <th>S.No.</th>
                   <th>Name</th>
                   <th>Role</th>
                   <th>Phone</th>
@@ -235,17 +236,18 @@ const Employees = () => {
               <tbody>
                 {activeEmployees.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center p-32 text-muted">
+                    <td colSpan="8" className="text-center p-32 text-muted">
                       No staff members added yet.
                     </td>
                   </tr>
                 ) : (
-                  activeEmployees.map(emp => {
+                  activeEmployees.map((emp, index) => {
                     const mVal = emp.salary || 0;
                     const dVal = emp.dailySalary || emp.daily_salary || 0;
                     const sType = emp.salaryType || (mVal > 0 && dVal > 0 ? 'Both' : (dVal > 0 ? 'Daily' : 'Monthly'));
                     return (
                       <tr key={emp.id}>
+                        <td className="text-muted fw-600">{index + 1}</td>
                         <td>
                           <div className="d-flex align-center gap-12">
                             <div className="radius-full bg-tertiary d-flex align-center justify-center" style={{ width: '36px', height: '36px' }}>
@@ -300,6 +302,7 @@ const Employees = () => {
             <table className="data-table" style={{ minWidth: '850px' }}>
               <thead>
                 <tr>
+                  <th>S.No.</th>
                   <th>Date</th>
                   <th>Staff Member</th>
                   <th>Payment Type</th>
@@ -312,13 +315,14 @@ const Employees = () => {
               <tbody>
                 {salaryRecords.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center p-32 text-muted">
+                    <td colSpan="8" className="text-center p-32 text-muted">
                       No salary payouts recorded yet. Click "Record Salary Payout" to add one.
                     </td>
                   </tr>
                 ) : (
-                  salaryRecords.slice().reverse().map(rec => (
+                  salaryRecords.slice().reverse().map((rec, index) => (
                     <tr key={rec.id}>
+                      <td className="text-muted fw-600">{index + 1}</td>
                       <td className="fw-500">{rec.date}</td>
                       <td className="fw-600">{rec.employee_name}</td>
                       <td>

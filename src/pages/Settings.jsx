@@ -348,6 +348,7 @@ const Settings = () => {
                 <table className="data-table">
                   <thead>
                     <tr>
+                      <th>S.No.</th>
                       <th>Category Name</th>
                       <th>Associated Menu Items</th>
                       <th style={{ width: '120px' }}>Actions</th>
@@ -358,6 +359,7 @@ const Settings = () => {
                       const count = inventory.filter(i => getCategoryName(i.category || i.category_name).toLowerCase() === cat.name.toLowerCase()).length;
                       return (
                         <tr key={`cat-${cat.id || 'no-id'}-${cat.name}-${index}`}>
+                          <td className="text-muted fw-600">{index + 1}</td>
                           <td className="fw-600">{cat.name}</td>
                           <td>
                             <span className="badge bg-tertiary">
@@ -429,6 +431,7 @@ const Settings = () => {
                 <table className="data-table">
                   <thead>
                     <tr>
+                      <th>S.No.</th>
                       <th>Role Name</th>
                       <th>Assigned Staff</th>
                       <th style={{ width: '120px' }}>Actions</th>
@@ -439,6 +442,7 @@ const Settings = () => {
                       const empCount = employees.filter(e => String(e.role).toLowerCase() === r.name.toLowerCase()).length;
                       return (
                         <tr key={`role-${r.id || 'no-id'}-${r.name}-${index}`}>
+                          <td className="text-muted fw-600">{index + 1}</td>
                           <td className="fw-600">{r.name}</td>
                           <td>
                             <span className="badge bg-tertiary">
