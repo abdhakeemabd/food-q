@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Minus, Search, UtensilsCrossed, Trash2 } from 'lucide-react';
+import { Plus, Minus, Search, UtensilsCrossed, Trash2, Menu, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ const Order = () => {
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMobileCategories, setShowMobileCategories] = useState(false);
 
   // Load existing order if editing
   useEffect(() => {
@@ -99,15 +100,17 @@ const Order = () => {
   return (
     <div className="billing-layout">
       
-      {/* 1. Categories Sidebar */}
+      {/* Categories Sidebar (Desktop only) */}
       {!isSelectingTable && (
-        <div className="glass-panel billing-categories">
-          <h3 className="p-16 border-bottom m-0 fs-lg">Categories</h3>
+        <div className="glass-panel billing-categories hide-on-mobile">
+          <h3 className="p-16 border-bottom m-0 fs-lg d-flex justify-between align-center mobile-cat-header">
+            Categories
+          </h3>
           <div className="d-flex flex-col">
             {categories.map(cat => (
               <button
                 key={cat}
-                onClick={() => setSelectedCategory(cat)}
+                onClick={() => { setSelectedCategory(cat); setShowMobileCategories(false); }}
                 className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
               >
                 {cat}
@@ -118,10 +121,48 @@ const Order = () => {
       )}
 
       {/* 2. Product Grid (Middle) */}
+      
+      {/* Mobile Floating Category Button & Popup */}
+      {!isSelectingTable && (
+        <>
+          <button 
+            className="btn btn-primary radius-full shadow-xl hide-on-desktop d-flex align-center justify-center z-2000"
+            id="mobile-fab-cat-btn"
+            style={{ position: 'fixed', bottom: '24px', right: '24px', width: '60px', height: '60px', borderRadius: '50%', padding: 0 }}
+            onClick={() => setShowMobileCategories(!showMobileCategories)}
+          >
+            <Menu size={28} />
+          </button>
+
+          {/* Mobile Popup Menu */}
+          {showMobileCategories && (
+            <div 
+              className="w-100 h-100 z-2000" 
+              style={{ position: 'fixed', top: 0, left: 0, background: 'transparent' }}
+              onClick={() => setShowMobileCategories(false)}
+            />
+          )}
+          <div className={`glass-panel billing-categories mobile-popup z-2000 ${showMobileCategories ? 'mobile-show' : 'mobile-hide'}`}>
+            <div className="d-flex flex-col overflow-y-auto" style={{ maxHeight: '300px' }}>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => { setSelectedCategory(cat); setShowMobileCategories(false); }}
+                  className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
+                  style={{ padding: '12px 16px', fontSize: '0.95rem' }}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       <div className="glass-panel billing-grid">
         <div className="p-16 border-bottom d-flex flex-col gap-16">
            <div className="d-flex flex-wrap gap-16 justify-between align-center">
-             <h3 className="m-0">
+             <h3 className="m-0 d-flex align-center gap-12 pos-rel">
                {isSelectingTable ? 'Dine In Tables' : `Menu Items (${selectedCategory})`}
              </h3>
              <div className="pos-rel d-flex align-center mobile-w-100">
@@ -239,10 +280,12 @@ const Order = () => {
                     style={{ 
                       border: qty > 0 ? '2px solid var(--primary-color)' : '2px solid var(--border-color)',
                       boxShadow: qty > 0 ? '0 4px 14px rgba(226, 55, 68, 0.25)' : 'none',
-                      userSelect: 'none'
+                      userSelect: 'none',
+                      cursor: 'pointer'
                     }}
+                    onClick={() => increaseQty(item)}
                   >
-                    {/* Image Container */}
+                    {/* Image Container 
                     <div className="d-flex align-center justify-center pos-rel overflow-hidden" style={{ height: '110px', backgroundColor: 'rgba(255,255,255,0.05)' }}>
                       {item.img ? (
                         <img 
@@ -268,6 +311,7 @@ const Order = () => {
                         </div>
                       )}
                     </div>
+                    */}
                     
                     <div className="p-12 flex-1 d-flex flex-col justify-between">
                       <div>
@@ -279,7 +323,7 @@ const Order = () => {
                       {qty === 0 ? (
                         <button 
                           type="button"
-                          onClick={() => increaseQty(item)} 
+                          onClick={(e) => { e.stopPropagation(); increaseQty(item); }} 
                           className="btn btn-primary w-100 p-8 fw-600 d-flex align-center justify-center gap-6"
                           style={{ borderRadius: '10px' }}
                         >
@@ -293,10 +337,11 @@ const Order = () => {
                             border: '1px solid rgba(226, 55, 68, 0.5)',
                             borderRadius: '10px'
                           }}
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <button 
                             type="button"
-                            onClick={() => decreaseQty(item.id)} 
+                            onClick={(e) => { e.stopPropagation(); decreaseQty(item.id); }} 
                             className="d-flex align-center justify-center border-none text-white cursor-pointer radius-sm transition-all"
                             style={{ width: '32px', height: '32px', background: '#e23744', borderRadius: '8px', boxShadow: '0 2px 6px rgba(226, 55, 68, 0.4)' }}
                             title="Decrease Quantity"
@@ -310,7 +355,7 @@ const Order = () => {
                           
                           <button 
                             type="button"
-                            onClick={() => increaseQty(item)} 
+                            onClick={(e) => { e.stopPropagation(); increaseQty(item); }} 
                             className="d-flex align-center justify-center border-none text-white cursor-pointer radius-sm transition-all"
                             style={{ width: '32px', height: '32px', background: '#e23744', borderRadius: '8px', boxShadow: '0 2px 6px rgba(226, 55, 68, 0.4)' }}
                             title="Increase Quantity"
