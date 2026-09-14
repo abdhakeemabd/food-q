@@ -298,11 +298,19 @@ export const useDbStore = create((set, get) => ({
     
     if (backendModels.includes(collection)) {
       try {
-        await fetchWithAuth(`${API_URL}/api/${collection}/${id}/`, {
+        const res = await fetchWithAuth(`${API_URL}/api/${collection}/${id}/`, {
           method: 'DELETE',
           headers: getAuthHeaders()
         });
-      } catch (e) { console.error('API Error:', e); }
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          const errMsg = errData.error || errData.detail || 'Failed to delete record from server';
+          throw new Error(errMsg);
+        }
+      } catch (e) {
+        console.error('API Error:', e);
+        throw e;
+      }
     }
 
     const log = {

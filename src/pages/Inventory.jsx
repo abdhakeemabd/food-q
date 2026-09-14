@@ -175,10 +175,14 @@ const Inventory = () => {
       showCancelButton: true,
       confirmButtonColor: '#e23744',
       confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        deleteRecord('inventory', id, currentUser);
-        Swal.fire({ title: 'Deleted!', text: 'Item has been deleted.', icon: 'success', timer: 5000, timerProgressBar: true });
+        try {
+          await deleteRecord('inventory', id, currentUser);
+          Swal.fire({ title: 'Deleted!', text: 'Item has been deleted.', icon: 'success', timer: 3000, timerProgressBar: true });
+        } catch (err) {
+          Swal.fire('Error', err.message || 'Failed to delete item', 'error');
+        }
       }
     });
   };
