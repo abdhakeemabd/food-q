@@ -39,7 +39,7 @@ function App() {
           <Layout />
         </ProtectedRoute>
       }>
-        <Route index element={<Billing />} />
+        <Route index element={<Tables />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="order" element={<Order />} />
         <Route path="billing" element={<Billing />} />

@@ -93,10 +93,9 @@ const Layout = () => {
         </div>
         
         <nav className="flex-1 d-flex flex-col gap-4 overflow-hidden py-24 overflow-y-auto">
-          <SidebarItem to="/" icon={Receipt} label="POS / Take Order" onClick={handleLinkClick} />
+          <SidebarItem to="/" icon={LayoutGrid} label="Tables" onClick={handleLinkClick} />
           <SidebarItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" onClick={handleLinkClick} />
-          <SidebarItem to="/order" icon={UtensilsCrossed} label="KOT View" onClick={handleLinkClick} />
-          <SidebarItem to="/tables" icon={LayoutGrid} label="Tables" onClick={handleLinkClick} />
+          <SidebarItem to="/order" icon={UtensilsCrossed} label="Take Order (KOT)" onClick={handleLinkClick} />
           <SidebarItem to="/bills" icon={Receipt} label="Bill History" onClick={handleLinkClick} />
           <SidebarItem to="/finance" icon={BarChart3} label="Income/Expenses" onClick={handleLinkClick} />
           <SidebarItem to="/daily-tracker" icon={Wallet} label="Daily Tracker" onClick={handleLinkClick} />

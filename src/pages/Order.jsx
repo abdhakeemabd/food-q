@@ -100,17 +100,17 @@ const Order = () => {
   return (
     <div className="billing-layout">
       
-      {/* Categories Sidebar (Desktop only) */}
+      {/* Categories Sidebar */}
       {!isSelectingTable && (
-        <div className="glass-panel billing-categories hide-on-mobile">
-          <h3 className="p-16 border-bottom m-0 fs-lg d-flex justify-between align-center mobile-cat-header">
+        <div className="glass-panel billing-categories" style={{ width: '180px', flexShrink: 0 }}>
+          <h3 className="p-16 border-bottom m-0 fs-lg d-flex justify-between align-center">
             Categories
           </h3>
           <div className="d-flex flex-col">
             {categories.map(cat => (
               <button
                 key={cat}
-                onClick={() => { setSelectedCategory(cat); setShowMobileCategories(false); }}
+                onClick={() => setSelectedCategory(cat)}
                 className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
               >
                 {cat}
@@ -118,45 +118,6 @@ const Order = () => {
             ))}
           </div>
         </div>
-      )}
-
-      {/* 2. Product Grid (Middle) */}
-      
-      {/* Mobile Floating Category Button & Popup */}
-      {!isSelectingTable && (
-        <>
-          <button 
-            className="btn btn-primary radius-full shadow-xl hide-on-desktop d-flex align-center justify-center z-2000"
-            id="mobile-fab-cat-btn"
-            style={{ position: 'fixed', bottom: '24px', right: '24px', width: '60px', height: '60px', borderRadius: '50%', padding: 0 }}
-            onClick={() => setShowMobileCategories(!showMobileCategories)}
-          >
-            <Menu size={28} />
-          </button>
-
-          {/* Mobile Popup Menu */}
-          {showMobileCategories && (
-            <div 
-              className="w-100 h-100 z-2000" 
-              style={{ position: 'fixed', top: 0, left: 0, background: 'transparent' }}
-              onClick={() => setShowMobileCategories(false)}
-            />
-          )}
-          <div className={`glass-panel billing-categories mobile-popup z-2000 ${showMobileCategories ? 'mobile-show' : 'mobile-hide'}`}>
-            <div className="d-flex flex-col overflow-y-auto" style={{ maxHeight: '300px' }}>
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => { setSelectedCategory(cat); setShowMobileCategories(false); }}
-                  className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
-                  style={{ padding: '12px 16px', fontSize: '0.95rem' }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
       )}
 
       <div className="glass-panel billing-grid">
