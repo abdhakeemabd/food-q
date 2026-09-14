@@ -80,23 +80,16 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-sm);
   cursor: pointer;
   border: none;
-  transition: all var(--transition-fast);
   font-family: var(--font-main);
 }
 
-.btn:active {
-  transform: scale(0.97);
-}
-
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+  background: var(--primary-color);
   color: white;
-  box-shadow: var(--shadow-glow);
 }
 
 .btn-primary:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 0 20px rgba(230, 57, 70, 0.6);
+  background-color: var(--primary-hover);
 }
 
 .btn-secondary {

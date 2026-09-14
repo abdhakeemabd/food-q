@@ -33,6 +33,25 @@ const Tables = () => {
         </div>
         
         <div className="d-flex flex-wrap align-center gap-12 mobile-w-100 mobile-flex-col">
+          {/* Order Type Tabs */}
+          <div className="d-flex gap-8 flex-wrap mobile-w-100">
+            {['Dine In', 'Parcel', 'Online'].map(type => (
+              <button 
+                key={type}
+                type="button"
+                className={`btn ${type === 'Dine In' ? 'btn-primary' : 'btn-secondary'} px-14 py-8 radius-md fw-600`}
+                style={{ fontSize: '0.85rem' }}
+                onClick={() => {
+                  if (type !== 'Dine In') {
+                    navigate('/order', { state: { tableId: 'PARCEL_ONLINE' } });
+                  }
+                }}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
           <div className="pos-rel d-flex align-center mobile-w-100">
             <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
             <input 

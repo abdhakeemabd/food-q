@@ -16,6 +16,7 @@ const Order = () => {
   const activeOrders = useDbStore(state => state.activeOrders);
   const saveTableOrder = useDbStore(state => state.saveTableOrder);
 
+  const [orderType, setOrderType] = useState('Dine In');
   const [selectedTable, setSelectedTable] = useState(initialTableId);
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -24,14 +25,17 @@ const Order = () => {
 
   // Load existing order if editing
   useEffect(() => {
-    if (selectedTable && activeOrders[selectedTable]) {
+    if (orderType === 'Dine In' && selectedTable && activeOrders[selectedTable]) {
       setCart(activeOrders[selectedTable]);
+    } else if (orderType !== 'Dine In') {
+      // Automatic virtual order ID for Parcel or Online
+      setCart([]);
     } else {
       setCart([]);
     }
-  }, [selectedTable, activeOrders]);
+  }, [selectedTable, orderType, activeOrders]);
 
-  const isSelectingTable = !selectedTable;
+  const isSelectingTable = orderType === 'Dine In' && !selectedTable;
 
   const categories = ['All', ...new Set(inventory.map(item => item.category))];
   const filteredInventory = inventory.filter(i => {
@@ -99,33 +103,32 @@ const Order = () => {
 
   return (
     <div className="billing-layout">
-      
-      {/* Categories Sidebar */}
-      {!isSelectingTable && (
-        <div className="glass-panel billing-categories" style={{ width: '180px', flexShrink: 0 }}>
-          <h3 className="p-16 border-bottom m-0 fs-lg d-flex justify-between align-center">
-            Categories
-          </h3>
-          <div className="d-flex flex-col">
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="glass-panel billing-grid">
+      {/* Product Grid & Order Options Header */}
+      <div className="glass-panel billing-grid flex-1">
         <div className="p-16 border-bottom d-flex flex-col gap-16">
-           <div className="d-flex flex-wrap gap-16 justify-between align-center">
-             <h3 className="m-0 d-flex align-center gap-12 pos-rel">
-               {isSelectingTable ? 'Dine In Tables' : `Menu Items (${selectedCategory})`}
-             </h3>
+           {/* Top Header: Order Types & Table / Order Info */}
+           <div className="d-flex flex-wrap gap-12 justify-between align-center">
+             <div className="d-flex gap-8 flex-wrap mobile-w-100">
+               {['Dine In', 'Parcel', 'Online'].map(type => (
+                 <button 
+                   key={type}
+                   type="button"
+                   onClick={() => {
+                     setOrderType(type);
+                     if (type !== 'Dine In') {
+                       setSelectedTable(`PARCEL_${type.toUpperCase()}`);
+                     } else {
+                       setSelectedTable(initialTableId || '');
+                     }
+                   }}
+                   className={`btn ${orderType === type ? 'btn-primary' : 'btn-secondary'} px-16 py-8 radius-md fw-600`}
+                   style={{ fontSize: '0.9rem' }}
+                 >
+                   {type}
+                 </button>
+               ))}
+             </div>
+
              <div className="pos-rel d-flex align-center mobile-w-100">
                <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
                <input 
@@ -138,6 +141,23 @@ const Order = () => {
                />
              </div>
            </div>
+
+           {/* Menu Categories Bar Below Order Type (Responsive Scrollable Tabs) */}
+           {!isSelectingTable && (
+             <div className="d-flex align-center gap-8 overflow-x-auto py-4" style={{ whiteSpace: 'nowrap', scrollbarWidth: 'thin' }}>
+               {categories.map(cat => (
+                 <button
+                   key={cat}
+                   type="button"
+                   onClick={() => setSelectedCategory(cat)}
+                   className={`btn ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
+                   style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '20px', flexShrink: 0 }}
+                 >
+                   {cat}
+                 </button>
+               ))}
+             </div>
+           )}
         </div>
         
         <div className="p-16 overflow-y-auto flex-1">
@@ -246,34 +266,6 @@ const Order = () => {
                     }}
                     onClick={() => increaseQty(item)}
                   >
-                    {/* Image Container 
-                    <div className="d-flex align-center justify-center pos-rel overflow-hidden" style={{ height: '110px', backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                      {item.img ? (
-                        <img 
-                          src={item.img} 
-                          alt={item.itemName} 
-                          className="w-100 h-100"
-                          style={{ objectFit: 'cover' }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.parentNode.innerHTML = `<span style="font-size: 2rem;">🍲</span>`;
-                          }}
-                        />
-                      ) : (
-                        <span className="fs-2xl">🍲</span>
-                      )}
-                      
-                      {qty > 0 && (
-                        <div 
-                          className="pos-abs px-8 py-2 radius-sm fw-700 fs-xs text-white" 
-                          style={{ top: '8px', right: '8px', background: 'var(--primary-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.5)' }}
-                        >
-                          {qty} in order
-                        </div>
-                      )}
-                    </div>
-                    */}
-                    
                     <div className="p-12 flex-1 d-flex flex-col justify-between">
                       <div>
                         <div className="fw-600 mb-4" style={{ fontSize: '0.95rem', color: '#ffffff', wordBreak: 'break-word' }}>{item.itemName}</div>
@@ -339,10 +331,14 @@ const Order = () => {
         
         {/* Order Info */}
         <div className="p-16 border-bottom">
-          {selectedTable ? (
+          {orderType === 'Dine In' && selectedTable ? (
             <div className="mb-12 p-12 bg-tertiary radius-sm d-flex justify-between align-center">
-              <span className="fw-600">{tables.find(t => t.id === selectedTable)?.name}</span>
+              <span className="fw-600">{tables.find(t => t.id === selectedTable)?.name || 'Dine In'}</span>
               <button onClick={() => setSelectedTable('')} className="btn btn-secondary p-4 fs-sm">Change Table</button>
+            </div>
+          ) : orderType !== 'Dine In' ? (
+            <div className="mb-12 p-12 bg-tertiary radius-sm">
+              <span className="fw-600">{orderType} Order</span>
             </div>
           ) : (
             <div className="mb-12 p-12 text-danger fw-600">Please select a table</div>
