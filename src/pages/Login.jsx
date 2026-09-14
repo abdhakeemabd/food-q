@@ -171,7 +171,7 @@ const Login = () => {
                 }}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter your password"
               />
               <button 
                 type="button"

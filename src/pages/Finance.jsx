@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Printer, Download } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 
 const Finance = () => {
@@ -108,9 +109,45 @@ const Finance = () => {
             </button>
           </div>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Plus size={18} /> Add {activeTab === 'expenses' ? 'Expense' : 'Income'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => {
+              const title = activeTab === 'expenses' ? 'Finance Expenses' : 'Finance Other Income';
+              const cols = [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: item => item.date || new Date(item.createdDate).toLocaleDateString() },
+                { label: 'Title', accessor: 'title' },
+                { label: 'Category', accessor: 'category' },
+                { label: 'Amount (₹)', accessor: 'amount' },
+                { label: 'Notes', accessor: item => item.notes || '-' }
+              ];
+              printReport(title, cols, activeData.filter(i => i.status !== 'Archived'));
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
+          </button>
+          <button 
+            onClick={() => {
+              const filename = activeTab === 'expenses' ? 'Finance_Expenses' : 'Finance_Income';
+              const cols = [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: item => item.date || new Date(item.createdDate).toLocaleDateString() },
+                { label: 'Title', accessor: 'title' },
+                { label: 'Category', accessor: 'category' },
+                { label: 'Amount (₹)', accessor: 'amount' },
+                { label: 'Notes', accessor: item => item.notes || '-' }
+              ];
+              exportToCSV(filename, cols, activeData.filter(i => i.status !== 'Archived'));
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Download size={16} /> Export CSV
+          </button>
+          <button onClick={() => handleOpenModal()} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Plus size={18} /> Add {activeTab === 'expenses' ? 'Expense' : 'Income'}
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel" style={{ overflow: 'hidden' }}>
@@ -176,23 +213,23 @@ const Finance = () => {
             
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Title *</label>
-                <input type="text" className="form-input" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required placeholder="e.g. Electricity Bill" style={{ padding: '12px' }} />
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Title <span className="required-star">*</span></label>
+                <input type="text" className="form-input" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required placeholder="Enter title" style={{ padding: '12px' }} />
               </div>
               
               <div style={{ display: 'flex', gap: '20px' }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Amount (₹) *</label>
-                  <input type="number" className="form-input" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} required min="0" style={{ padding: '12px' }} />
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Amount (₹) <span className="required-star">*</span></label>
+                  <input type="number" className="form-input" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} required min="0" placeholder="Enter amount" style={{ padding: '12px' }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Date *</label>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Date <span className="required-star">*</span></label>
                   <input type="date" className="form-input" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} required style={{ padding: '12px' }} />
                 </div>
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Category *</label>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Category <span className="required-star">*</span></label>
                 <select className="form-input" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} style={{ padding: '12px' }}>
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>

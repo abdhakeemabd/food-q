@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed, GripVertical } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Image as ImageIcon, Package, Search, UtensilsCrossed, GripVertical, Printer, Download } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 
 import {
@@ -128,42 +129,80 @@ const Inventory = () => {
 
   const openAddModal = () => {
     setEditItem(null);
-    setFormData({ itemName: '', category: categories[0] || 'Main Course', price: '', quantity: '', img: '' });
+    setFormData({ 
+      itemName: '', 
+      category: categories[0] || 'Main Course', 
+      price: '', 
+      quantity: '', 
+      position: items.length + 1,
+      img: '' 
+    });
     setIsModalOpen(true);
   };
 
   const openEditModal = (item) => {
     setEditItem(item);
+    const itemIndex = items.findIndex(i => i.id === item.id);
+    const currentPos = itemIndex !== -1 ? itemIndex + 1 : ((item?.display_order || 0) + 1);
     setFormData({ 
       itemName: item?.itemName || item?.name || '', 
       category: item?.category || categories[0] || 'Main Course', 
       price: item?.price || '', 
       quantity: item?.stock !== undefined ? item.stock : (item?.quantity || 0), 
+      position: currentPos,
       img: item?.img || '' 
     });
     setIsModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.itemName || !formData.price || !formData.quantity || !formData.category) {
-      Swal.fire('Error', 'Please fill all required fields', 'error');
+    if (!formData.itemName || formData.price === '' || !formData.category) {
+      Swal.fire('Error', 'Please fill all required fields (Name, Category, Price)', 'error');
       return;
     }
 
+    const maxPos = items.length + (editItem ? 0 : 1);
+    const targetPos = Math.max(1, Math.min(maxPos, Number(formData.position || maxPos)));
+    const targetDisplayOrder = targetPos - 1;
+
+    const stockVal = (formData.quantity !== '' && formData.quantity !== null && formData.quantity !== undefined) ? Number(formData.quantity) : 0;
+
     const payload = {
-      ...formData,
+      itemName: formData.itemName,
+      category: formData.category,
       price: Number(formData.price),
-      quantity: Number(formData.quantity)
+      quantity: stockVal,
+      display_order: targetDisplayOrder,
+      img: formData.img
     };
 
     if (editItem) {
-      updateRecord('inventory', editItem.id, payload, currentUser);
-      Swal.fire({ title: 'Updated!', text: 'Menu item has been updated.', icon: 'success', timer: 5000, timerProgressBar: true });
+      await updateRecord('inventory', editItem.id, payload, currentUser);
     } else {
-      addRecord('inventory', payload, currentUser);
-      Swal.fire({ title: 'Added!', text: 'New menu item has been added.', icon: 'success', timer: 5000, timerProgressBar: true });
+      await addRecord('inventory', payload, currentUser);
     }
+
+    // Shift and update display_order on the backend for affected items
+    const remainingItems = editItem ? items.filter(i => i.id !== editItem.id) : [...items];
+    const reorderedList = [...remainingItems];
+    reorderedList.splice(targetDisplayOrder, 0, editItem ? { ...editItem, ...payload } : { id: 'temp_new', ...payload });
+
+    // Sync all new indices to the server
+    reorderedList.forEach((it, idx) => {
+      if (it.id && it.id !== 'temp_new' && it.display_order !== idx) {
+        updateRecord('inventory', it.id, { display_order: idx }, currentUser);
+      }
+    });
+
+    Swal.fire({ 
+      title: editItem ? 'Updated!' : 'Added!', 
+      text: `Menu item saved at position #${targetPos}.`, 
+      icon: 'success', 
+      timer: 3000, 
+      timerProgressBar: true 
+    });
+
     setIsModalOpen(false);
   };
 
@@ -228,9 +267,37 @@ const Inventory = () => {
           </h2>
           <div className="text-muted">Manage menu items, prices, and stock levels</div>
         </div>
-        <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
-          <Plus size={18} /> Add Menu Item
-        </button>
+        <div className="d-flex align-center gap-12 flex-wrap">
+          <button 
+            onClick={() => printReport('Inventory List', [
+              { label: 'S.No', accessor: (_, idx) => idx + 1 },
+              { label: 'Item Name', accessor: item => item.itemName || item.name || '' },
+              { label: 'Category', accessor: 'category' },
+              { label: 'Price (₹)', accessor: 'price' },
+              { label: 'Stock Qty', accessor: item => item.quantity !== undefined ? item.quantity : (item.stock || 0) },
+              { label: 'Status', accessor: item => item.status || 'Active' }
+            ], items)} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
+          </button>
+          <button 
+            onClick={() => exportToCSV('Inventory_List', [
+              { label: 'S.No', accessor: (_, idx) => idx + 1 },
+              { label: 'Item Name', accessor: item => item.itemName || item.name || '' },
+              { label: 'Category', accessor: 'category' },
+              { label: 'Price (₹)', accessor: 'price' },
+              { label: 'Stock Qty', accessor: item => item.quantity !== undefined ? item.quantity : (item.stock || 0) },
+              { label: 'Status', accessor: item => item.status || 'Active' }
+            ], items)} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Download size={16} /> Export CSV
+          </button>
+          <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
+            <Plus size={18} /> Add Menu Item
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel overflow-hidden">
@@ -250,50 +317,50 @@ const Inventory = () => {
         </div>
 
         <div className="w-100" style={{ overflowX: 'auto' }}>
-          <table className="data-table" style={{ minWidth: '800px' }}>
-          <thead>
-            <tr>
-              <th>S.No.</th>
-              <th>Image</th>
-              <th>Item Name</th>
-              <th>Category</th>
-              <th>Price (₹)</th>
-              <th>Stock Qty</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan="8" className="text-center p-32 text-muted">
-                  No items found matching your search. Add some to get started.
-                </td>
-              </tr>
-            ) : (
-              <DndContext 
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext 
-                  items={items.map(i => i.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {items.map((item, index) => (
-                    <SortableRow 
-                      key={item.id} 
-                      item={item} 
-                      index={index}
-                      openEditModal={openEditModal}
-                      handleDelete={handleDelete}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )}
-          </tbody>
-        </table>
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <table className="data-table" style={{ minWidth: '800px' }}>
+              <thead>
+                <tr>
+                  <th>S.No.</th>
+                  <th>Image</th>
+                  <th>Item Name</th>
+                  <th>Category</th>
+                  <th>Price (₹)</th>
+                  <th>Stock Qty</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="text-center p-32 text-muted">
+                      No items found matching your search. Add some to get started.
+                    </td>
+                  </tr>
+                ) : (
+                  <SortableContext 
+                    items={items.map(i => i.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {items.map((item, index) => (
+                      <SortableRow 
+                        key={item.id} 
+                        item={item} 
+                        index={index}
+                        openEditModal={openEditModal}
+                        handleDelete={handleDelete}
+                      />
+                    ))}
+                  </SortableContext>
+                )}
+              </tbody>
+            </table>
+          </DndContext>
         </div>
       </div>
 
@@ -309,12 +376,12 @@ const Inventory = () => {
             
             <form onSubmit={handleSave} className="d-flex flex-col gap-20">
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Item Name *</label>
-                <input type="text" className="form-input p-12" value={formData.itemName} onChange={e => setFormData({...formData, itemName: e.target.value})} required placeholder="e.g. Chicken Shawaya" />
+                <label className="d-block mb-8 fs-sm text-muted">Item Name <span className="required-star">*</span></label>
+                <input type="text" className="form-input p-12" value={formData.itemName} onChange={e => setFormData({...formData, itemName: e.target.value})} required placeholder="Enter item name" />
               </div>
               
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Category *</label>
+                <label className="d-block mb-8 fs-sm text-muted">Category <span className="required-star">*</span></label>
                 <select 
                   className="form-input p-12" 
                   value={formData.category} 
@@ -326,19 +393,36 @@ const Inventory = () => {
 
               <div className="d-flex gap-20">
                 <div className="flex-1">
-                  <label className="d-block mb-8 fs-sm text-muted">Price (₹) *</label>
-                  <input type="number" className="form-input p-12" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required min="0" />
+                  <label className="d-block mb-8 fs-sm text-muted">Price (₹) <span className="required-star">*</span></label>
+                  <input type="number" className="form-input p-12" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required min="0" placeholder="Enter price" />
                 </div>
                 <div className="flex-1">
-                  <label className="d-block mb-8 fs-sm text-muted">Stock Quantity *</label>
-                  <input type="number" className="form-input p-12" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} required min="0" />
+                  <label className="d-block mb-8 fs-sm text-muted">Stock Quantity</label>
+                  <input type="number" className="form-input p-12" value={formData.quantity} onChange={e => setFormData({...formData, quantity: e.target.value})} min="0" placeholder="Enter stock (Optional)" />
                 </div>
+              </div>
+
+              <div>
+                <div className="d-flex justify-between align-center mb-8">
+                  <label className="fs-sm text-muted">Item Position / Menu Sequence <span className="required-star">*</span></label>
+                  <span className="fs-xs text-muted">Auto-filled (Editable)</span>
+                </div>
+                <input 
+                  type="number" 
+                  className="form-input p-12 w-100" 
+                  value={formData.position || ''} 
+                  onChange={e => setFormData({...formData, position: e.target.value})} 
+                  required 
+                  min="1" 
+                  max={items.length + (editItem ? 0 : 1)} 
+                  placeholder="Enter position number"
+                />
               </div>
 
               <div>
                 <label className="d-block mb-8 fs-sm text-muted">Image (URL or Upload from PC)</label>
                 <div className="d-flex flex-col gap-12">
-                  <input type="text" className="form-input p-12 w-100" value={formData.img} onChange={e => setFormData({...formData, img: e.target.value})} placeholder="https://... or /images/..." />
+                  <input type="text" className="form-input p-12 w-100" value={formData.img} onChange={e => setFormData({...formData, img: e.target.value})} placeholder="Paste image URL" />
                   <div className="d-flex align-center gap-12">
                     <span className="fs-sm text-muted text-nowrap">OR upload from PC:</span>
                     <input 

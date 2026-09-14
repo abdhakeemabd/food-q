@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import * as XLSX from 'xlsx';
-import { Download, Calendar, IndianRupee, TrendingUp, TrendingDown, ShoppingBag, ArrowDownRight } from 'lucide-react';
+import { Download, Calendar, IndianRupee, TrendingUp, TrendingDown, ShoppingBag, ArrowDownRight, Printer } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 
 const Reports = () => {
@@ -156,6 +157,23 @@ const Reports = () => {
             />
           )}
 
+          <button 
+            onClick={() => {
+              const title = `Financial Report (${reportType === 'daily' ? selectedDate : selectedMonth})`;
+              const cols = [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: exp => new Date(exp.date).toLocaleDateString() },
+                { label: 'Category', accessor: 'category' },
+                { label: 'Description', accessor: 'title' },
+                { label: 'Amount (₹)', accessor: exp => `-₹${exp.amount}` }
+              ];
+              printReport(title, cols, filteredExpenses);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
+          </button>
+          
           <button onClick={handleExport} className="btn btn-primary d-flex align-center gap-8">
             <Download size={18} /> Export Excel
           </button>

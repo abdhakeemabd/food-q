@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X, Users, DollarSign, Calendar, CreditCard } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Users, DollarSign, Calendar, CreditCard, Printer, Download } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 
 const Employees = () => {
@@ -206,15 +207,73 @@ const Employees = () => {
           </div>
         </div>
 
-        {activeTab === 'staff' ? (
-          <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
-            <Plus size={18} /> Add Staff
+        <div className="d-flex align-center gap-12 flex-wrap">
+          <button 
+            onClick={() => {
+              const title = activeTab === 'staff' ? 'Staff Members List' : 'Salary Payouts Log';
+              const cols = activeTab === 'staff' ? [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Name', accessor: 'name' },
+                { label: 'Role', accessor: 'role' },
+                { label: 'Phone', accessor: emp => emp.phone || '-' },
+                { label: 'Monthly Salary (₹)', accessor: emp => emp.salary || 0 },
+                { label: 'Daily Salary (₹)', accessor: emp => emp.dailySalary || emp.daily_salary || 0 },
+                { label: 'Status', accessor: emp => emp.status || 'Active' }
+              ] : [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: 'date' },
+                { label: 'Staff Member', accessor: 'employee_name' },
+                { label: 'Payment Type', accessor: 'payment_type' },
+                { label: 'Payment Mode', accessor: 'payment_mode' },
+                { label: 'Amount Paid (₹)', accessor: 'amount' },
+                { label: 'Notes', accessor: rec => rec.notes || '-' }
+              ];
+              const data = activeTab === 'staff' ? activeEmployees : salaryRecords;
+              printReport(title, cols, data);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
           </button>
-        ) : (
-          <button onClick={() => openSalaryModal()} className="btn btn-primary d-flex align-center gap-8">
-            <DollarSign size={18} /> Record Salary Payout
+
+          <button 
+            onClick={() => {
+              const filename = activeTab === 'staff' ? 'Staff_List' : 'Salary_Payouts';
+              const cols = activeTab === 'staff' ? [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Name', accessor: 'name' },
+                { label: 'Role', accessor: 'role' },
+                { label: 'Phone', accessor: emp => emp.phone || '-' },
+                { label: 'Monthly Salary (₹)', accessor: emp => emp.salary || 0 },
+                { label: 'Daily Salary (₹)', accessor: emp => emp.dailySalary || emp.daily_salary || 0 },
+                { label: 'Status', accessor: emp => emp.status || 'Active' }
+              ] : [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: 'date' },
+                { label: 'Staff Member', accessor: 'employee_name' },
+                { label: 'Payment Type', accessor: 'payment_type' },
+                { label: 'Payment Mode', accessor: 'payment_mode' },
+                { label: 'Amount Paid (₹)', accessor: 'amount' },
+                { label: 'Notes', accessor: rec => rec.notes || '-' }
+              ];
+              const data = activeTab === 'staff' ? activeEmployees : salaryRecords;
+              exportToCSV(filename, cols, data);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Download size={16} /> Export CSV
           </button>
-        )}
+
+          {activeTab === 'staff' ? (
+            <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
+              <Plus size={18} /> Add Staff
+            </button>
+          ) : (
+            <button onClick={() => openSalaryModal()} className="btn btn-primary d-flex align-center gap-8">
+              <DollarSign size={18} /> Record Salary Payout
+            </button>
+          )}
+        </div>
       </div>
 
       {activeTab === 'staff' ? (
@@ -358,12 +417,12 @@ const Employees = () => {
             
             <form onSubmit={handleSave} className="d-flex flex-col gap-20">
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Full Name *</label>
-                <input type="text" className="form-input p-12 w-100" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="John Doe" />
+                <label className="d-block mb-8 fs-sm text-muted">Full Name <span className="required-star">*</span></label>
+                <input type="text" className="form-input p-12 w-100" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="Enter full name" />
               </div>
               
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Role *</label>
+                <label className="d-block mb-8 fs-sm text-muted">Role <span className="required-star">*</span></label>
                 {availableRoles.length > 0 ? (
                   <select 
                     className="form-input p-12 w-100" 
@@ -381,18 +440,18 @@ const Employees = () => {
                     value={formData.role} 
                     onChange={e => setFormData({...formData, role: e.target.value})} 
                     required 
-                    placeholder="Enter role (or add roles in Settings)..." 
+                    placeholder="Enter role..." 
                   />
                 )}
               </div>
 
               <div>
                 <label className="d-block mb-8 fs-sm text-muted">Phone Number</label>
-                <input type="tel" className="form-input p-12 w-100" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="1234567890" />
+                <input type="tel" className="form-input p-12 w-100" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="Enter phone number" />
               </div>
 
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Salary Structure *</label>
+                <label className="d-block mb-8 fs-sm text-muted">Salary Structure <span className="required-star">*</span></label>
                 <select 
                   className="form-input p-12 w-100" 
                   value={formData.salaryType} 
@@ -406,28 +465,28 @@ const Employees = () => {
 
               {(formData.salaryType === 'Monthly' || formData.salaryType === 'Both') && (
                 <div>
-                  <label className="d-block mb-8 fs-sm text-muted">Monthly Salary (₹) *</label>
+                  <label className="d-block mb-8 fs-sm text-muted">Monthly Salary (₹) <span className="required-star">*</span></label>
                   <input 
                     type="number" 
                     className="form-input p-12 w-100" 
                     value={formData.salary} 
                     onChange={e => setFormData({...formData, salary: e.target.value})} 
                     min="0" 
-                    placeholder="e.g. 15000"
+                    placeholder="Enter monthly salary"
                   />
                 </div>
               )}
 
               {(formData.salaryType === 'Daily' || formData.salaryType === 'Both') && (
                 <div>
-                  <label className="d-block mb-8 fs-sm text-muted">Daily Salary (₹) *</label>
+                  <label className="d-block mb-8 fs-sm text-muted">Daily Salary (₹) <span className="required-star">*</span></label>
                   <input 
                     type="number" 
                     className="form-input p-12 w-100" 
                     value={formData.dailySalary} 
                     onChange={e => setFormData({...formData, dailySalary: e.target.value})} 
                     min="0" 
-                    placeholder="e.g. 500"
+                    placeholder="Enter daily salary"
                   />
                 </div>
               )}
@@ -454,7 +513,7 @@ const Employees = () => {
 
             <form onSubmit={handleSaveSalaryPayout} className="d-flex flex-col gap-20">
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Staff Member *</label>
+                <label className="d-block mb-8 fs-sm text-muted">Staff Member <span className="required-star">*</span></label>
                 {activeEmployees.length > 0 ? (
                   <select 
                     className="form-input p-12 w-100" 
@@ -473,14 +532,14 @@ const Employees = () => {
                     value={salaryForm.employee_name} 
                     onChange={e => setSalaryForm({...salaryForm, employee_name: e.target.value})} 
                     required 
-                    placeholder="Employee Name" 
+                    placeholder="Enter employee name" 
                   />
                 )}
               </div>
 
               <div className="d-flex gap-16">
                 <div className="flex-1">
-                  <label className="d-block mb-8 fs-sm text-muted">Payout Type *</label>
+                  <label className="d-block mb-8 fs-sm text-muted">Payout Type <span className="required-star">*</span></label>
                   <select 
                     className="form-input p-12 w-100" 
                     value={salaryForm.payment_type} 
@@ -505,7 +564,7 @@ const Employees = () => {
                 </div>
 
                 <div className="flex-1">
-                  <label className="d-block mb-8 fs-sm text-muted">Amount (₹) *</label>
+                  <label className="d-block mb-8 fs-sm text-muted">Amount (₹) <span className="required-star">*</span></label>
                   <input 
                     type="number" 
                     className="form-input p-12 w-100" 
@@ -514,13 +573,14 @@ const Employees = () => {
                     required 
                     min="0" 
                     step="0.01" 
+                    placeholder="Enter amount"
                   />
                 </div>
               </div>
 
               <div className="d-flex gap-16">
                 <div className="flex-1">
-                  <label className="d-block mb-8 fs-sm text-muted">Date *</label>
+                  <label className="d-block mb-8 fs-sm text-muted">Date <span className="required-star">*</span></label>
                   <input 
                     type="date" 
                     className="form-input p-12 w-100" 
@@ -531,7 +591,7 @@ const Employees = () => {
                 </div>
 
                 <div className="flex-1">
-                  <label className="d-block mb-8 fs-sm text-muted">Payment Mode *</label>
+                  <label className="d-block mb-8 fs-sm text-muted">Payment Mode <span className="required-star">*</span></label>
                   <select 
                     className="form-input p-12 w-100" 
                     value={salaryForm.payment_mode} 
@@ -551,7 +611,7 @@ const Employees = () => {
                   className="form-input p-12 w-100" 
                   value={salaryForm.notes} 
                   onChange={e => setSalaryForm({...salaryForm, notes: e.target.value})} 
-                  placeholder="e.g. Paid for August or Daily Wage" 
+                  placeholder="Enter notes or remarks" 
                 />
               </div>
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X, Users } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Users, Printer, Download } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 
 const Customers = () => {
@@ -81,9 +82,45 @@ const Customers = () => {
           </h2>
           <div className="text-muted">Manage your customer database and viewing history</div>
         </div>
-        <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
-          <Plus size={18} /> Add Customer
-        </button>
+        <div className="d-flex align-center gap-12 flex-wrap">
+          <button 
+            onClick={() => {
+              const cols = [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Name', accessor: 'name' },
+                { label: 'Phone', accessor: 'phone' },
+                { label: 'Address', accessor: c => c.address || '-' },
+                { label: 'Total Orders', accessor: c => bills.filter(b => b.customerPhone === c.phone).length },
+                { label: 'Status', accessor: c => c.status || 'Active' }
+              ];
+              printReport('Customers List', cols, activeCustomers);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
+          </button>
+
+          <button 
+            onClick={() => {
+              const cols = [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Name', accessor: 'name' },
+                { label: 'Phone', accessor: 'phone' },
+                { label: 'Address', accessor: c => c.address || '-' },
+                { label: 'Total Orders', accessor: c => bills.filter(b => b.customerPhone === c.phone).length },
+                { label: 'Status', accessor: c => c.status || 'Active' }
+              ];
+              exportToCSV('Customers_List', cols, activeCustomers);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Download size={16} /> Export CSV
+          </button>
+
+          <button onClick={openAddModal} className="btn btn-primary d-flex align-center gap-8">
+            <Plus size={18} /> Add Customer
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel overflow-hidden">
@@ -162,18 +199,18 @@ const Customers = () => {
             
             <form onSubmit={handleSave} className="d-flex flex-col gap-20">
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Full Name *</label>
-                <input type="text" className="form-input p-12 w-100" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="John Doe" />
+                <label className="d-block mb-8 fs-sm text-muted">Full Name <span className="required-star">*</span></label>
+                <input type="text" className="form-input p-12 w-100" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required placeholder="Enter full name" />
               </div>
               
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Phone Number *</label>
-                <input type="tel" className="form-input p-12 w-100" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} required placeholder="1234567890" />
+                <label className="d-block mb-8 fs-sm text-muted">Phone Number <span className="required-star">*</span></label>
+                <input type="tel" className="form-input p-12 w-100" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} required placeholder="Enter phone number" />
               </div>
 
               <div>
                 <label className="d-block mb-8 fs-sm text-muted">Delivery Address (Optional)</label>
-                <textarea className="form-input p-12 w-100 resize-y" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} rows="3"></textarea>
+                <textarea className="form-input p-12 w-100 resize-y" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} rows="3" placeholder="Enter delivery address"></textarea>
               </div>
 
               <div className="d-flex justify-end gap-16 mt-16">

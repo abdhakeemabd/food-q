@@ -37,7 +37,7 @@ const Tables = () => {
             <Search size={18} className="text-muted" style={{ position: 'absolute', left: '14px', zIndex: 10, pointerEvents: 'none' }} />
             <input 
               type="text" 
-              placeholder="Search table (e.g. Table 1, Available)..." 
+              placeholder="Search tables..." 
               className="form-input w-320 search-input mobile-w-100" 
               style={{ paddingLeft: '40px', width: '100%' }}
               value={searchQuery}
@@ -52,8 +52,8 @@ const Tables = () => {
               Swal.fire({
                 title: 'Add New Table',
                 html: `
-                  <input id="swal-input1" class="swal2-input" placeholder="Table Name (e.g., Table 6)">
-                  <input id="swal-input2" type="number" class="swal2-input" placeholder="Capacity (e.g., 4)">
+                  <input id="swal-input1" class="swal2-input" placeholder="Table Name">
+                  <input id="swal-input2" type="number" class="swal2-input" placeholder="Capacity">
                 `,
                 focusConfirm: false,
                 showCancelButton: true,

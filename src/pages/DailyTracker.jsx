@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDbStore } from '../store/dbStore';
 import { useAuth } from '../store/AuthContext';
-import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Printer, Download } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 
 const DailyTracker = () => {
@@ -123,9 +124,79 @@ const DailyTracker = () => {
             </button>
           </div>
         </div>
-        <button onClick={() => handleOpenModal()} className="btn btn-primary d-flex align-center gap-8">
-          <Plus size={18} /> Add {activeTab === 'sales' ? 'Sales Record' : 'Expense Record'}
-        </button>
+        <div className="d-flex align-center gap-12 flex-wrap">
+          <button 
+            onClick={() => {
+              const title = activeTab === 'sales' ? 'Daily Sales Tracker' : 'Daily Expense Breakdown';
+              const cols = activeTab === 'sales' ? [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: 'date' },
+                { label: 'Total Sale (₹)', accessor: 'total_sale' },
+                { label: 'Swiggy (₹)', accessor: 'swiggy' },
+                { label: 'Total Expense (₹)', accessor: 'total_expense' },
+                { label: 'Cash Balance (₹)', accessor: 'cash_balance' }
+              ] : [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: 'date' },
+                { label: 'Chicken (₹)', accessor: 'chicken' },
+                { label: 'Mutton (₹)', accessor: 'mutton' },
+                { label: 'Fish (₹)', accessor: 'fish' },
+                { label: 'Vegetable (₹)', accessor: 'vegetable' },
+                { label: 'Grocery (₹)', accessor: 'grocery' },
+                { label: 'Dairy (₹)', accessor: 'dairy' },
+                { label: 'Salary (₹)', accessor: 'salary' },
+                { label: 'Rent (₹)', accessor: 'rent' },
+                { label: 'EB Bill (₹)', accessor: 'eb_bill' },
+                { label: 'Gas (₹)', accessor: 'gas' },
+                { label: 'Other (₹)', accessor: 'other' },
+                { label: 'Total Expense (₹)', accessor: 'total' }
+              ];
+              const data = activeTab === 'sales' ? dailyTrackers : dailyExpenses;
+              printReport(title, cols, data);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
+          </button>
+
+          <button 
+            onClick={() => {
+              const filename = activeTab === 'sales' ? 'Daily_Sales_Tracker' : 'Daily_Expense_Breakdown';
+              const cols = activeTab === 'sales' ? [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: 'date' },
+                { label: 'Total Sale (₹)', accessor: 'total_sale' },
+                { label: 'Swiggy (₹)', accessor: 'swiggy' },
+                { label: 'Total Expense (₹)', accessor: 'total_expense' },
+                { label: 'Cash Balance (₹)', accessor: 'cash_balance' }
+              ] : [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: 'date' },
+                { label: 'Chicken (₹)', accessor: 'chicken' },
+                { label: 'Mutton (₹)', accessor: 'mutton' },
+                { label: 'Fish (₹)', accessor: 'fish' },
+                { label: 'Vegetable (₹)', accessor: 'vegetable' },
+                { label: 'Grocery (₹)', accessor: 'grocery' },
+                { label: 'Dairy (₹)', accessor: 'dairy' },
+                { label: 'Salary (₹)', accessor: 'salary' },
+                { label: 'Rent (₹)', accessor: 'rent' },
+                { label: 'EB Bill (₹)', accessor: 'eb_bill' },
+                { label: 'Gas (₹)', accessor: 'gas' },
+                { label: 'Other (₹)', accessor: 'other' },
+                { label: 'Total Expense (₹)', accessor: 'total' }
+              ];
+              const data = activeTab === 'sales' ? dailyTrackers : dailyExpenses;
+              exportToCSV(filename, cols, data);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Download size={16} /> Export CSV
+          </button>
+
+          <button onClick={() => handleOpenModal()} className="btn btn-primary d-flex align-center gap-8">
+            <Plus size={18} /> Add {activeTab === 'sales' ? 'Sales Record' : 'Expense Record'}
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel overflow-hidden">
@@ -243,7 +314,7 @@ const DailyTracker = () => {
             
             <form onSubmit={handleSave} className="d-flex flex-col gap-20">
               <div>
-                <label className="d-block mb-8 fs-sm text-muted">Date *</label>
+                <label className="d-block mb-8 fs-sm text-muted">Date <span className="required-star">*</span></label>
                 <input type="date" className="form-input p-12 w-100" value={formData.date || ''} onChange={e => setFormData({...formData, date: e.target.value})} required />
               </div>
 
@@ -252,21 +323,21 @@ const DailyTracker = () => {
                   <div className="d-flex gap-20 flex-wrap">
                     <div className="flex-1">
                       <label className="d-block mb-8 fs-sm text-muted">Day Total Sale (₹)</label>
-                      <input type="number" className="form-input p-12 w-100" value={formData.total_sale || ''} onChange={e => setFormData({...formData, total_sale: e.target.value})} min="0" step="0.01" />
+                      <input type="number" className="form-input p-12 w-100" value={formData.total_sale || ''} onChange={e => setFormData({...formData, total_sale: e.target.value})} min="0" step="0.01" placeholder="Enter sale amount" />
                     </div>
                     <div className="flex-1">
                       <label className="d-block mb-8 fs-sm text-muted">Swiggy Sale (₹)</label>
-                      <input type="number" className="form-input p-12 w-100" value={formData.swiggy || ''} onChange={e => setFormData({...formData, swiggy: e.target.value})} min="0" step="0.01" />
+                      <input type="number" className="form-input p-12 w-100" value={formData.swiggy || ''} onChange={e => setFormData({...formData, swiggy: e.target.value})} min="0" step="0.01" placeholder="Enter Swiggy sale" />
                     </div>
                   </div>
                   <div className="d-flex gap-20 flex-wrap">
                     <div className="flex-1">
                       <label className="d-block mb-8 fs-sm text-muted">Day Total Expense (₹)</label>
-                      <input type="number" className="form-input p-12 w-100" value={formData.total_expense || ''} onChange={e => setFormData({...formData, total_expense: e.target.value})} min="0" step="0.01" />
+                      <input type="number" className="form-input p-12 w-100" value={formData.total_expense || ''} onChange={e => setFormData({...formData, total_expense: e.target.value})} min="0" step="0.01" placeholder="Enter expense amount" />
                     </div>
                     <div className="flex-1">
                       <label className="d-block mb-8 fs-sm text-muted">Cash Balance (₹)</label>
-                      <input type="number" className="form-input p-12 w-100" value={formData.cash_balance || ''} onChange={e => setFormData({...formData, cash_balance: e.target.value})} step="0.01" />
+                      <input type="number" className="form-input p-12 w-100" value={formData.cash_balance || ''} onChange={e => setFormData({...formData, cash_balance: e.target.value})} step="0.01" placeholder="Enter cash balance" />
                     </div>
                   </div>
                 </>
@@ -275,7 +346,7 @@ const DailyTracker = () => {
                   {['chicken', 'mutton', 'fish', 'vegetable', 'grocery', 'dairy', 'salary', 'rent', 'eb_bill', 'gas', 'other'].map(field => (
                     <div key={field}>
                       <label className="d-block mb-8 fs-sm text-muted text-capitalize">{field} (₹)</label>
-                      <input type="number" className="form-input p-12 w-100" value={formData[field] || ''} onChange={e => setFormData({...formData, [field]: e.target.value})} min="0" step="0.01" />
+                      <input type="number" className="form-input p-12 w-100" value={formData[field] || ''} onChange={e => setFormData({...formData, [field]: e.target.value})} min="0" step="0.01" placeholder="Enter amount" />
                     </div>
                   ))}
                 </div>

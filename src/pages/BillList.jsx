@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useDbStore } from '../store/dbStore';
 import * as XLSX from 'xlsx';
-import { Download, Eye, X, Trash2, Receipt } from 'lucide-react';
+import { Download, Eye, X, Trash2, Receipt, Printer } from 'lucide-react';
+import { exportToCSV, printReport } from '../utils/exportUtils';
 import Swal from 'sweetalert2';
 import { useAuth } from '../store/AuthContext';
 
@@ -59,9 +60,31 @@ const BillList = () => {
           </h2>
           <div className="text-muted">Total Bills: {bills.length}</div>
         </div>
-        <button onClick={handleExport} className="btn btn-primary d-flex align-center gap-8">
-          <Download size={18} /> Export CSV
-        </button>
+        <div className="d-flex align-center gap-12 flex-wrap">
+          <button 
+            onClick={() => {
+              const cols = [
+                { label: 'S.No', accessor: (_, i) => i + 1 },
+                { label: 'Date', accessor: b => new Date(b.createdDate || Date.now()).toLocaleString() },
+                { label: 'Order Type', accessor: b => b.orderType || 'Dine In' },
+                { label: 'Table ID', accessor: b => b.tableId || 'N/A' },
+                { label: 'Customer', accessor: b => b.customerPhone || 'N/A' },
+                { label: 'Items Count', accessor: b => Array.isArray(b.items) ? b.items.reduce((s, i) => s + (i.qty || 1), 0) : (b.items_count || 0) },
+                { label: 'Payment Method', accessor: b => b.paymentMethod || b.payment_method || 'Cash' },
+                { label: 'Amount (₹)', accessor: b => b.totalAmount || b.amount_paid || 0 },
+                { label: 'Status', accessor: b => b.status || 'Paid' }
+              ];
+              printReport('Bill History', cols, bills);
+            }} 
+            className="btn btn-secondary d-flex align-center gap-6"
+          >
+            <Printer size={16} /> Print
+          </button>
+
+          <button onClick={handleExport} className="btn btn-primary d-flex align-center gap-8">
+            <Download size={18} /> Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel overflow-hidden">
